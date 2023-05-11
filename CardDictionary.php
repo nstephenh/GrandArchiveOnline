@@ -1,41 +1,6 @@
 <?php
 
 include "Constants.php";
-include "CardDictionaries/WelcomeToRathe/WTRShared.php";
-include "CardDictionaries/ArcaneRising/ARCShared.php";
-include "CardDictionaries/ArcaneRising/ARCGeneric.php";
-include "CardDictionaries/ArcaneRising/ARCMechanologist.php";
-include "CardDictionaries/ArcaneRising/ARCRanger.php";
-include "CardDictionaries/ArcaneRising/ARCRuneblade.php";
-include "CardDictionaries/ArcaneRising/ARCWizard.php";
-include "CardDictionaries/CrucibleOfWar/CRUShared.php";
-include "CardDictionaries/Monarch/MONShared.php";
-include "CardDictionaries/Monarch/MONGeneric.php";
-include "CardDictionaries/Monarch/MONBrute.php";
-include "CardDictionaries/Monarch/MONIllusionist.php";
-include "CardDictionaries/Monarch/MONRuneblade.php";
-include "CardDictionaries/Monarch/MONWarrior.php";
-include "CardDictionaries/Monarch/MONTalent.php";
-include "CardDictionaries/TalesOfAria/ELEShared.php";
-include "CardDictionaries/TalesOfAria/ELEGuardian.php";
-include "CardDictionaries/TalesOfAria/ELERanger.php";
-include "CardDictionaries/TalesOfAria/ELERuneblade.php";
-include "CardDictionaries/TalesOfAria/ELETalent.php";
-include "CardDictionaries/Everfest/EVRShared.php";
-include "CardDictionaries/Uprising/UPRShared.php";
-include "CardDictionaries/card_names.php";
-include "CardDictionaries/ClassicBattles/DVRShared.php";
-include "CardDictionaries/ClassicBattles/RVDShared.php";
-include "CardDictionaries/Dynasty/DYNShared.php";
-include "CardDictionaries/Outsiders/OUTShared.php";
-include "CardDictionaries/Roguelike/ROGUEShared.php";
-
-include "GeneratedCode/GeneratedCardDictionaries.php";
-include "GeneratedCode/DatabaseGeneratedCardDictionaries.php";
-
-$CID_BloodRotPox = "OUT234";
-$CID_Frailty = "OUT235";
-$CID_Inertia = "OUT236";
 
 function CardType($cardID)
 {
