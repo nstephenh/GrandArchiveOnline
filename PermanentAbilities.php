@@ -62,72 +62,11 @@ function PermanentDestroyed($player, $cardID, $isToken = false)
 function PermanentBeginEndPhaseEffects()
 {
   global $mainPlayer, $defPlayer;
-
   $permanents = &GetPermanents($mainPlayer);
-  /*WriteLog("size of zone = " . count($permanents));
-  WriteLog("zone[0] = " . $permanents[0]);*/
   for ($i = count($permanents) - PermanentPieces(); $i >= 0; $i -= PermanentPieces()) {
     $remove = 0;
     switch ($permanents[$i]) {
-      case "UPR439": case "UPR440": case "UPR441":
-        PutPermanentIntoPlay($mainPlayer, "UPR043");
-        $remove = 1;
-        break;
-      case "ROGUE501":
-        $deck = &GetDeck($mainPlayer);
-        $discard = &GetDiscard($mainPlayer);
-        $banish = &GetBanish($mainPlayer);
-        /*WriteLog("size of discard = " . count($discard));
-        WriteLog("discard[0] = " . $discard[0]);
-        WriteLog("discard[1] = " . $discard[1]);*/
-        for($i = count($discard)-1; $i >= 0; --$i)
-        {
-          if(rand(0, 1) == 0) array_push($deck, $discard[$i]);
-          else
-          {
-            array_push($banish, $discard[$i]);
-            array_push($banish, "");
-            array_push($banish, GetUniqueId());
-          }
-          /*WriteLog("banish[0] = " . $banish[0]);
-          WriteLog("banish[1] = " . $banish[1]);
-          WriteLog("banish[2] = " . $banish[2]);*/
 
-          unset($discard[$i]);
-        }
-        $destArr = [];
-        while (count($deck) > 0) {
-          $index = GetRandom(0, count($deck) - 1);
-          array_push($destArr, $deck[$index]);
-          unset($deck[$index]);
-          $deck = array_values($deck);
-        }
-        $deck = $destArr;
-        break;
-      case "ROGUE703":
-        $deck = &GetDeck($mainPlayer);
-        $discard = &GetDiscard($mainPlayer);
-        $banish = &GetBanish($mainPlayer);
-        for($i = count($discard)-1; $i >= 0; --$i)
-        {
-          if(rand(0, 1) == 0 && CardType($discard[$i]) != "W" && CardType($discard[$i]) != "E") array_push($deck, $discard[$i]);
-          else
-          {
-            array_push($banish, $discard[$i]);
-            array_push($banish, "");
-            array_push($banish, GetUniqueId());
-          }
-          unset($discard[$i]);
-        }
-        $destArr = [];
-        while (count($deck) > 0) {
-          $index = GetRandom(0, count($deck) - 1);
-          array_push($destArr, $deck[$index]);
-          unset($deck[$index]);
-          $deck = array_values($deck);
-        }
-        $deck = $destArr;
-        break;
       default:
         break;
     }
@@ -138,10 +77,7 @@ function PermanentBeginEndPhaseEffects()
   for ($i = count($permanents) - PermanentPieces(); $i >= 0; $i -= PermanentPieces()) {
     $remove = 0;
     switch ($permanents[$i]) {
-      case "UPR439": case "UPR440": case "UPR441":
-        PutPermanentIntoPlay($defPlayer, "UPR043");
-        $remove = 1;
-        break;
+
       default:
         break;
     }
@@ -409,43 +345,10 @@ function PermanentPlayAbilities($attackID, $from="")
 {
   global $mainPlayer, $actionPoints;
   $permanents = &GetPermanents($mainPlayer);
-  $cardType = CardType($attackID);
-  $cardSubType = CardSubType($attackID);
-  $cardPitch = PitchValue($attackID);
   for ($i = count($permanents) - PermanentPieces(); $i >= 0; $i -= PermanentPieces()) {
     $remove = 0;
     switch($permanents[$i]) {
-      case "ROGUE521":
-        if($cardPitch == 2 && $cardType != "AA")
-        {
-          AddCurrentTurnEffect($permanents[$i] . "-NA", $mainPlayer);
-        }
-        break;
-      case "ROGUE528":
-        if($cardType == "A") ++$actionPoints;
-        break;
 
-      case "ROGUE607":
-        if($cardType != "A" && $cardType != "AA") AddCurrentTurnEffect($permanents[$i], $mainPlayer);
-        break;
-      case "ROGUE702":
-        if($cardPitch == 2 && $cardType != "AA")
-        {
-          AddCurrentTurnEffect($permanents[$i] . "-NA", $mainPlayer);
-        }
-        break;
-      case "ROGUE704":
-        if($cardType == "AA")
-        {
-          $banish = &GetBanish($mainPlayer);
-          array_push($banish, $attackID);
-          array_push($banish, "");
-          array_push($banish, GetUniqueId());
-        }
-        break;
-      case "ROGUE706":
-        if($from == "ARS") Draw($mainPlayer);
-        break;
       default:
         break;
     }

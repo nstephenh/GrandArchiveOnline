@@ -6,6 +6,17 @@ include "Libraries/SHMOPLibraries.php";
 include "APIKeys/APIKeys.php";
 include_once 'includes/functions.inc.php';
 include_once 'includes/dbh.inc.php';
+include_once 'CoreLogic.php';
+include_once 'Libraries/CoreLibraries.php';
+
+include_once 'LZCompressor/LZContext.php';
+include_once 'LZCompressor/LZData.php';
+include_once 'LZCompressor/LZReverseDictionary.php';
+include_once 'LZCompressor/LZString.php';
+include_once 'LZCompressor/LZUtil.php';
+include_once 'LZCompressor/LZUtil16.php';
+
+use LZCompressor\LZString as LZString;
 
 session_start();
 $gameName = $_GET["gameName"];
@@ -30,9 +41,15 @@ if ($matchup == "" && GetCachePiece($gameName, $playerID + 6) != "") {
 }
 if ($decklink == "" && $deck == "" && $favoriteDeckLink == "0") {
   $starterDeck = true;
-  switch ($decksToTry) {
+  switch($decksToTry) {
     case '1':
-      $decklink = "https://fabrary.net/decks/01GJG7Z4WGWSZ95FY74KX4M557";
+      $deck = "./lorraineStarter.txt";
+      break;
+    case '2':
+      $deck = "./silvieStarter.txt";
+      break;
+    case '3':
+      $deck = "./raiStarter.txt";
       break;
     default:
       $decklink = "https://fabrary.net/decks/01GJG7Z4WGWSZ95FY74KX4M557";
@@ -66,27 +83,15 @@ if ($decklink != "") {
   if ($playerID == 1) $p1DeckLink = $decklink;
   else if ($playerID == 2) $p2DeckLink = $decklink;
   $curl = curl_init();
-  $isFaBDB = str_contains($decklink, "fabdb");
+  $isSilvie = str_contains($decklink, "silvie");
   $isFaBMeta = str_contains($decklink, "fabmeta");
-  if ($isFaBDB) {
+  if($isSilvie) {
     $decklinkArr = explode("/", $decklink);
+    $uid = $decklinkArr[count($decklinkArr) - 2];
     $slug = $decklinkArr[count($decklinkArr) - 1];
-    $apiLink = "https://api.fabdb.net/decks/" . $slug;
-  } else if (str_contains($decklink, "fabrary")) {
-    $headers = array(
-      "x-api-key: " . $FaBraryKey,
-      "Content-Type: application/json",
-    );
-    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-    $decklinkArr = explode("/", $decklink);
-    $decklinkArr = explode("?", $decklinkArr[count($decklinkArr) - 1]);
-    $slug = $decklinkArr[0];
-    $apiLink = "https://5zvy977nw7.execute-api.us-east-2.amazonaws.com/prod/decks/" . $slug;
-    if ($matchup != "") $apiLink .= "?matchupId=" . $matchup;
-  } else {
-    $decklinkArr = explode("/", $decklink);
-    $slug = $decklinkArr[count($decklinkArr) - 1];
-    $apiLink = "https://api.fabmeta.net/deck/" . $slug;
+    $apiLink = "https://api.silvie.org/api/build/decks/published?";//"@OotTheMonk/Ya7CqS207754CBvuLeB7
+    $apiLink .= "id=" . $slug;
+    $apiLink .= "&user=" . $uid;
   }
 
   curl_setopt($curl, CURLOPT_URL, $apiLink);
@@ -114,268 +119,54 @@ if ($decklink != "") {
     echo 'Deck object is null. Failed to retrieve deck from API.';
     exit;
   }
-  $deckName = $deckObj->{'name'};
+  $cards = json_decode(LZString::decompressFromEncodedURIComponent($deckObj->deck->code));
+  $deckName = $cards->{'name'};
   if (isset($deckObj->{'matchups'})) {
     if ($playerID == 1) $p1Matchups = $deckObj->{'matchups'};
     else if ($playerID == 2) $p2Matchups = $deckObj->{'matchups'};
   }
   $deckFormat = (isset($deckObj->{'format'}) ? $deckObj->{'format'} : "");
-  $cards = $deckObj->{'cards'};
+  //$cards = $deckObj->{'cards'};
   $deckCards = "";
   $sideboardCards = "";
-  $headSideboard = "";
-  $chestSideboard = "";
-  $armsSideboard = "";
-  $legsSideboard = "";
-  $offhandSideboard = "";
-  $quiverSideboard = "";
-  $unsupportedCards = "";
-  $bannedCard = "";
-  $character = "";
-  $head = "";
-  $chest = "";
-  $arms = "";
-  $legs = "";
-  $offhand = "";
-  $quiver = "";
-  $weapon1 = "";
-  $weapon2 = "";
-  $weaponSideboard = "";
+  $materialCards = "";
   $totalCards = 0;
 
-  if (is_countable($cards)) {
-    for ($i = 0; $i < count($cards); ++$i) {
-      $count = $cards[$i]->{'total'};
-      $numSideboard = (isset($cards[$i]->{'sideboardTotal'}) ? $cards[$i]->{'sideboardTotal'} : 0);
-      $id = "";
-      if ($isFaBDB) {
-        $printings = $cards[$i]->{'printings'};
-        $printing = $printings[0];
-        $sku = $printing->{'sku'};
-        $id = $sku->{'sku'};
-        $id = explode("-", $id)[0];
-      } else if ($isFaBMeta) {
-        $id = $cards[$i]->{'identifier'};
-      } else if(isset($cards[$i]->{'cardIdentifier'})) {
-        $id = $cards[$i]->{'cardIdentifier'};
-      }
-      if($id == "") continue;
-      $id = GetAltCardID($id);
-      $cardType = CardType($id);
-      $cardSet = substr($id, 0, 3);
-
-      if (IsBanned($id, $format)) {
-        if ($bannedCard != "") $bannedCard .= ", ";
-        $bannedCard .= CardName($id);
-      }
-
-      if ($cardType == "") //Card not supported, error
+  foreach($cards as $key => $value) {
+    if(str_contains($key, "-s")) continue;//TODO: Sideboard
+    if(CardTypeContains($key, "REGALIA") || CardTypeContains($key, "CHAMPION"))
+    {
+      if($materialCards != "") $materialCards .= " ";
+      $materialCards .= $key;
+    }
+    else
+    {
+      if(is_int($value) && $value > 0 && $value <= 4) for($i=0; $i<$value; ++$i)
       {
-        if ($unsupportedCards != "") $unsupportedCards .= " ";
-        $unsupportedCards .= $id;
-      } else if ($cardType == "C") {
-        $character = $id;
-      } else if ($cardType == "W") {
-        $numMainBoard = ($isFaBDB ? $count - $numSideboard : $count);
-        for ($j = 0; $j < $numMainBoard; ++$j) {
-          if ($weapon1 == "") $weapon1 = $id;
-          else if ($weapon2 == "") $weapon2 = $id;
-          else {
-            if ($weaponSideboard != "") $weaponSideboard .= " ";
-            $weaponSideboard .= $id;
-          }
-        }
-        for ($j = 0; $j < $numSideboard; ++$j) {
-          if ($weaponSideboard != "") $weaponSideboard .= " ";
-          $weaponSideboard .= $id;
-        }
-      } else if ($cardType == "E") {
-        $subtype = CardSubType($id);
-        if ($numSideboard == 0) {
-          switch ($subtype) {
-            case "Head":
-              if ($head == "") $head = $id;
-              else {
-                if ($headSideboard != "") $headSideboard .= " ";
-                $headSideboard .= $id;
-              }
-              break;
-            case "Chest":
-              if ($chest == "") $chest = $id;
-              else {
-                if ($chestSideboard != "") $chestSideboard .= " ";
-                $chestSideboard .= $id;
-              }
-              break;
-            case "Arms":
-              if ($arms == "") $arms = $id;
-              else {
-                $armsSideboard .= " ";
-                $armsSideboard .= $id;
-              }
-              break;
-            case "Legs":
-              if ($legs == "") $legs = $id;
-              else {
-                if ($legsSideboard != "") $legsSideboard .= " ";
-                $legsSideboard .= $id;
-              }
-              break;
-            case "Off-Hand":
-              if ($offhand == "") $offhand = $id;
-              else {
-                if ($offhandSideboard != "") $offhandSideboard .= " ";
-                $offhandSideboard .= $id;
-              }
-              break;
-            case "Quiver":
-              if ($quiver == "") $quiver = $id;
-              else {
-                if ($quiverSideboard != "") $quiverSideboard .= " ";
-                $quiverSideboard .= $id;
-              }
-              break;
-            default:
-              break;
-          }
-        } else {
-          switch ($subtype) {
-            case "Head":
-              if ($headSideboard != "") $headSideboard .= " ";
-              $headSideboard .= $id;
-              break;
-            case "Chest":
-              if ($chestSideboard != "") $chestSideboard .= " ";
-              $chestSideboard .= $id;
-
-              break;
-            case "Arms":
-              if ($armsSideboard != "") $armsSideboard .= " ";
-              $armsSideboard .= $id;
-              break;
-            case "Legs":
-              if ($legsSideboard != "") $legsSideboard .= " ";
-              $legsSideboard .= $id;
-              break;
-            case "Off-Hand":
-              if ($offhandSideboard != "") $offhandSideboard .= " ";
-              $offhandSideboard .= $id;
-              break;
-            case "Quiver":
-              if ($quiverSideboard != "") $quiverSideboard .= " ";
-              $quiverSideboard .= $id;
-              break;
-            default:
-              break;
-          }
-        }
-      } else {
-        $numMainBoard = ($isFaBDB ? $count - $numSideboard : $count);
-        for ($j = 0; $j < $numMainBoard; ++$j) {
-          if ($deckCards != "") $deckCards .= " ";
-          $deckCards .= $id;
-        }
-        for ($j = 0; $j < $numSideboard; ++$j) {
-          if ($sideboardCards != "") $sideboardCards .= " ";
-          $sideboardCards .= $id;
-        }
-        $totalCards += $numMainBoard + $numSideboard;
+        if($deckCards != "") $deckCards .= " ";
+        $deckCards .= $key;
       }
     }
-  } else {
-    $_SESSION['error'] = '⚠️ The decklist link you have entered might be invalid or contain invalid cards (e.g Tokens).\n\nPlease double-check your decklist link and try again.';
-    header("Location: MainMenu.php");
-    die();
-  }
-
-  if ($unsupportedCards != "") {
-    $_SESSION['error'] = '⚠️ The following cards are not yet supported: ' . $unsupportedCards;
-    header("Location: MainMenu.php");
-    die();
-  }
-
-  if (CharacterHealth($character) < 30 && ($format == "cc" || $format == "compcc")) {
-    $_SESSION['error'] = '⚠️ Young heroes are not legal in Classic Constructed: \n\nYoung - ' . CardName($character);
-    header("Location: MainMenu.php");
-    die();
-  }
-
-  if (CharacterHealth($character) >= 30 && ($format == "blitz" || $format == "compblitz")) {
-    $_SESSION['error'] = '⚠️ Adult heroes are not legal in Blitz: \n\nAdult - ' . CardName($character);
-    header("Location: MainMenu.php");
-    die();
-  }
-
-  if ($starterDeck && ($format == "compblitz" || $format == "compcc")) {
-    $_SESSION['error'] = 'ℹ️ You have enter a competitive game with a starter deck. \n\nTo play the competitive queue please provide a constructed deck or try the starter decks in the normal queue. \n\nThank you!';
-    header("Location: MainMenu.php");
-    die();
-  }
-
-  if ($bannedCard != "" && !$starterDeck) {
-    if ($format == "blitz" || $format == "compblitz") {
-      $_SESSION['error'] = '⚠️ The following cards are not legal in the Blitz format: \n\n' . $bannedCard;
-    } elseif ($format == "cc" || $format == "compcc" || $format == "livinglegendscc") {
-      $_SESSION['error'] = '⚠️ The following cards are not legal in the Classic Constructed format: \n\n' . $bannedCard;
-    } elseif ($format == "commoner") {
-      $_SESSION['error'] = '⚠️ The following cards are not legal the Commoner format: \n\n' . $bannedCard;
-    }
-    header("Location: MainMenu.php");
-    die();
-  }
-
-  //if($totalCards < 60  && ($format == "cc" || $format == "compcc" || $format == "livinglegendscc"))
-  if ($totalCards < 60  && ($format == "cc" || $format == "compcc")) {
-    $_SESSION['error'] = $format . '⚠️ The deck link you have entered has too few cards (' . $totalCards . ') and is likely for blitz.\n\nPlease double-check your decklist link and try again.';
-    header("Location: MainMenu.php");
-    die();
-  }
-
-  if (($totalCards < 40 || $totalCards > 52) && ($format == "blitz" || $format == "compblitz" || $format == "commoner")) {
-    $_SESSION['error'] = '⚠️ The deck link you have entered does not have 40 cards (' . $totalCards . ') and is likely for CC.\n\nPlease double-check your decklist link and try again.';
-    header("Location: MainMenu.php");
-    die();
-  }
-
-  if ($totalCards > 80  && $format == "compcc") {
-    $_SESSION['error'] = $format . '⚠️ The deck link you have entered has too many cards (' . $totalCards . ').\n\nPlease double-check your decklist link and try again.';
-    header("Location: MainMenu.php");
-    die();
   }
 
   //We have the decklist, now write to file
   $filename = "./Games/" . $gameName . "/p" . $playerID . "Deck.txt";
   $deckFile = fopen($filename, "w");
-  $charString = $character;
-  if ($weapon1 != "") $charString .= " " . $weapon1;
-  if ($weapon2 != "") $charString .= " " . $weapon2;
-  if ($offhand != "") $charString .= " " . $offhand;
-  if ($quiver != "") $charString .= " " . $quiver;
-  if ($head != "") $charString .= " " . $head;
-  if ($chest != "") $charString .= " " . $chest;
-  if ($arms != "") $charString .= " " . $arms;
-  if ($legs != "") $charString .= " " . $legs;
-  fwrite($deckFile, $charString . "\r\n");
+  fwrite($deckFile, $materialCards . "\r\n");
   fwrite($deckFile, $deckCards . "\r\n");
-  fwrite($deckFile, $headSideboard . "\r\n");
-  fwrite($deckFile, $chestSideboard . "\r\n");
-  fwrite($deckFile, $armsSideboard . "\r\n");
-  fwrite($deckFile, $legsSideboard . "\r\n");
-  fwrite($deckFile, $offhandSideboard . "\r\n");
-  fwrite($deckFile, $weaponSideboard . "\r\n");
-  fwrite($deckFile, $sideboardCards . "\r\n");
-  fwrite($deckFile, $quiverSideboard);
   fclose($deckFile);
   copy($filename, "./Games/" . $gameName . "/p" . $playerID . "DeckOrig.txt");
 
   if (isset($_SESSION["userid"])) {
     include_once './includes/functions.inc.php';
     include_once "./includes/dbh.inc.php";
+    /*
     $deckbuilderID = GetDeckBuilderId($_SESSION["userid"], $decklink);
     if ($deckbuilderID != "") {
       if ($playerID == 1) $p1deckbuilderID = $deckbuilderID;
       else $p2deckbuilderID = $deckbuilderID;
     }
+    */
   }
 
   if ($favoriteDeck == "on" && isset($_SESSION["userid"])) {
@@ -385,20 +176,7 @@ if ($decklink != "") {
     addFavoriteDeck($_SESSION["userid"], $decklink, $deckName, $character, $deckFormat);
   }
 } else {
-  $character = "";
-  $deckOptions = explode("-", $deck);
-  if ($deckOptions[0] == "DRAFT") {
-    if ($set == "WTR") $deckFile = "./WTRDraftFiles/Games/" . $deckOptions[1] . "/LimitedDeck.txt";
-    else $deckFile = "./DraftFiles/Games/" . $deckOptions[1] . "/LimitedDeck.txt";
-  } else if ($deckOptions[0] == "SEALED") {
-    $deckFile = "./SealedFiles/Games/" . $deckOptions[1] . "/LimitedDeck.txt";
-  } else if ($deckOptions[0] == "ROGUELIKE") {
-    $deckFile = "./Roguelike/Games/" . $deckOptions[1] . "/LimitedDeck.txt";
-  } else {
-    //Draftfab
-    $deckFile = "./Games/" . $gameName . "/p" . $playerID . "DraftDeck.txt";
-    ParseDraftFab($deck, $deckFile);
-  }
+  $deckFile = $deck;
   copy($deckFile, "./Games/" . $gameName . "/p" . $playerID . "Deck.txt");
   copy($deckFile, "./Games/" . $gameName . "/p" . $playerID . "DeckOrig.txt");
 }
@@ -448,7 +226,7 @@ if ($matchup == "") {
 
   //$authKey = ($playerID == 1 ? $p1Key : $p2Key);
   //$_SESSION["authKey"] = $authKey;
-  $domain = (!empty(getenv("DOMAIN")) ? getenv("DOMAIN") : "talishar.net");
+  $domain = (!empty(getenv("DOMAIN")) ? getenv("DOMAIN") : "clarent.net");
   if ($playerID == 1) {
     $_SESSION["p1AuthKey"] = $p1Key;
     setcookie("lastAuthKey", $p1Key, time() + 86400, "/", $domain);
@@ -460,98 +238,6 @@ if ($matchup == "") {
 
 session_write_close();
 header("Location: " . $redirectPath . "/GameLobby.php?gameName=$gameName&playerID=$playerID");
-
-
-function ParseDraftFab($deck, $filename)
-{
-  $character = "DYN001";
-  $deckCards = "";
-  $headSideboard = "";
-  $chestSideboard = "";
-  $armsSideboard = "";
-  $legsSideboard = "";
-  $offhandSideboard = "";
-  $quiverSideboard = "";
-  $weaponSideboard = "";
-  $sideboardCards = "";
-
-  $cards = explode(",", $deck);
-  for ($i = 0; $i < count($cards); ++$i) {
-    $card = explode(":", $cards[$i]);
-    $cardID = GetAltCardID($card[0]);
-    $quantity = $card[2];
-    $type = CardType($cardID);
-    switch ($type) {
-      case "T":
-        break;
-      case "C":
-        $character = $cardID;
-        break;
-      case "W":
-        if ($weaponSideboard != "") $weaponSideboard .= " ";
-        $weaponSideboard .= $cardID;
-        break;
-      case "E":
-        $subType = CardSubType($cardID);
-        switch ($subType) {
-          case "Head":
-            if ($headSideboard != "") $headSideboard .= " ";
-            $headSideboard .= $cardID;
-            break;
-          case "Chest":
-            if ($chestSideboard != "") $chestSideboard .= " ";
-            $chestSideboard .= $cardID;
-            break;
-          case "Arms":
-            if ($armsSideboard != "") $armsSideboard .= " ";
-            $armsSideboard .= $cardID;
-            break;
-          case "Legs":
-            if ($legsSideboard != "") $legsSideboard .= " ";
-            $legsSideboard .= $cardID;
-            break;
-          case "Off-Hand":
-            if ($offhandSideboard != "") $offhandSideboard .= " ";
-            $offhandSideboard .= $cardID;
-            break;
-          case "Quiver":
-            if ($quiverSideboard != "") $quiverSideboard .= " ";
-            $quiverSideboard .= $cardID;
-            break;
-          default:
-            break;
-        }
-        break;
-      default:
-        for ($j = 0; $j < $quantity; ++$j) {
-          if ($card[1] == "S") {
-            if ($sideboardCards != "") $sideboardCards .= " ";
-            $sideboardCards .= GetAltCardID($cardID);
-          } else {
-            if ($deckCards != "") $deckCards .= " ";
-            $deckCards .= GetAltCardID($cardID);
-          }
-        }
-        break;
-    }
-  }
-
-
-  $deckFile = fopen($filename, "w");
-  $charString = $character;
-
-  fwrite($deckFile, $charString . "\r\n");
-  fwrite($deckFile, $deckCards . "\r\n");
-  fwrite($deckFile, $headSideboard . "\r\n");
-  fwrite($deckFile, $chestSideboard . "\r\n");
-  fwrite($deckFile, $armsSideboard . "\r\n");
-  fwrite($deckFile, $legsSideboard . "\r\n");
-  fwrite($deckFile, $offhandSideboard . "\r\n");
-  fwrite($deckFile, $weaponSideboard . "\r\n");
-  fwrite($deckFile, $sideboardCards . "\r\n");
-  fwrite($deckFile, $quiverSideboard);
-  fclose($deckFile);
-}
 
 function GetAltCardID($cardID)
 {

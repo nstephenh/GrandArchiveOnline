@@ -3,146 +3,79 @@
 function ProcessHitEffect($cardID)
 {
   WriteLog("Processing hit effect for " . CardLink($cardID, $cardID));
-  global $currentPlayer, $combatChain;
-  if(CardType($combatChain[0]) == "AA" && (SearchAuras("CRU028", 1) || SearchAuras("CRU028", 2))) return;
+  global $mainPlayer, $combatChainState, $CCS_GoesWhereAfterLinkResolves, $defPlayer;
   if(HitEffectsArePrevented()) return;
-  $cardID = ShiyanaCharacter($cardID);
-  $set = CardSet($cardID);
-  $class = CardClass($cardID);
-  if($set == "WTR") return WTRHitEffect($cardID);
-  else if($set == "ARC") {
-    switch ($class) {
-      case "MECHANOLOGIST": return ARCMechanologistHitEffect($cardID);
-      case "RANGER": return ARCRangerHitEffect($cardID);
-      case "RUNEBLADE": return ARCRunebladeHitEffect($cardID);
-      case "WIZARD": return ARCWizardHitEffect($cardID);
-      case "GENERIC": return ARCGenericHitEffect($cardID);
-    }
+  switch($cardID)
+  {
+    case "bA3tRrJr2T"://Caliburn of Silencing
+      if(IsHeroAttackTarget())
+      {
+        $char = &GetPlayerCharacter($defPlayer);
+        $char[1] = 1;//Inactive
+        $char[8] = 1;//Freeze
+      }
+      break;
+    case "TgYTZg6TaG"://Wind Cutter
+      if(CardElement(MemoryRevealRandom($mainPlayer)) == "WIND") $combatChainState[$CCS_GoesWhereAfterLinkResolves] = "MEMORY";
+      break;
+    case "YqQsXwEvv5"://Corhazi Courier
+      if(IsClassBonusActive($mainPlayer, "ASSASSIN"))
+      {
+        Draw($mainPlayer);
+        PummelHit($mainPlayer);
+        AddDecisionQueue("SPECIFICCARD", $mainPlayer, "CORHAZICOURIER", 1);
+      }
+      break;
+    default: break;
   }
-  else if($set == "CRU") return CRUHitEffect($cardID);
-  else if ($set == "MON") {
-    switch ($class) {
-      case "BRUTE": return MONBruteHitEffect($cardID);
-      case "ILLUSIONIST": return MONIllusionistHitEffect($cardID);
-      case "RUNEBLADE": return MONRunebladeHitEffect($cardID);
-      case "WARRIOR": return MONWarriorHitEffect($cardID);
-      case "GENERIC": return MONGenericHitEffect($cardID);
-      case "NONE": return MONTalentHitEffect($cardID);
-      default: return "";
-    }
-  }
-  else if($set == "ELE") {
-    switch ($class) {
-      case "GUARDIAN": return ELEGuardianHitEffect($cardID);
-      case "RANGER": return ELERangerHitEffect($cardID);
-      case "RUNEBLADE": return ELERunebladeHitEffect($cardID);
-      default: return ELETalentHitEffect($cardID);
-    }
-  }
-  else if ($set == "EVR") return EVRHitEffect($cardID);
-  else if ($set == "UPR") return UPRHitEffect($cardID);
-  else if ($set == "DYN") return DYNHitEffect($cardID);
-  else if ($set == "OUT") return OUTHitEffect($cardID);
+
 }
 
 function AttackModifier($cardID, $from = "", $resourcesPaid = 0, $repriseActive = -1)
 {
-  global $mainPlayer, $mainPitch, $CS_Num6PowDisc, $combatChain, $combatChainState, $mainAuras, $CS_CardsBanished;
-  global $CS_NumCharged, $CCS_NumBoosted, $defPlayer, $CS_ArcaneDamageTaken;
-  global $CS_NumNonAttackCards, $CS_NumPlayedFromBanish, $CS_NumAuras, $CS_AtksWWeapon;
+  global $mainPlayer, $defPlayer, $combatChain, $combatChainState, $CS_NumLeveledUp;
   if($repriseActive == -1) $repriseActive = RepriseActive();
   switch($cardID) {
-    case "WTR003": return (GetClassState($mainPlayer, $CS_Num6PowDisc) > 0 ? 1 : 0);
-    case "WTR040":
-      $pitch = &GetPitch($mainPlayer);
-      return CountPitch($pitch, 3) >= 2 ? 2 : 0;
-    case "WTR080": return 1;
-    case "WTR081": return (ComboActive() ? $resourcesPaid : 0);
-    case "WTR082": return 1;
-    case "WTR083": return (ComboActive() ? 1 : 0);
-    case "WTR084": return (ComboActive() ? 1 : 0);
-    case "WTR086": case "WTR087": case "WTR088": return (ComboActive() ? NumAttacksHit() : 0);
-    case "WTR089": case "WTR090": case "WTR091": return (ComboActive() ? 3 : 0);
-    case "WTR095": case "WTR096": case "WTR097": return (ComboActive() ? 1 : 0);
-    case "WTR104": case "WTR105": case "WTR106": return (ComboActive() ? 2 : 0);
-    case "WTR110": case "WTR111": case "WTR112": return (ComboActive() ? 1 : 0);
-    case "WTR120": return 3;
-    case "WTR121": return 1;
-    case "WTR123": return $repriseActive ? 6 : 4;
-    case "WTR124": return $repriseActive ? 5 : 3;
-    case "WTR125": return $repriseActive ? 4 : 2;
-    case "WTR132": return CardType($combatChain[0]) == "W" && $repriseActive ? 3 : 0;
-    case "WTR133": return CardType($combatChain[0]) == "W" && $repriseActive ? 2 : 0;
-    case "WTR134": return CardType($combatChain[0]) == "W" && $repriseActive ? 1 : 0;
-    case "WTR135": return 3;
-    case "WTR136": return 2;
-    case "WTR137": return 1;
-    case "WTR138": return 3;
-    case "WTR139": return 2;
-    case "WTR140": return 1;
-    case "WTR176":case "WTR177":case "WTR178": return NumCardsNonEquipBlocking() < 2 ? 1 : 0;
-    case "ARC077": return GetClassState($mainPlayer, $CS_NumNonAttackCards) > 0 ? 3 : 0;
-    case "ARC188": case "ARC189": case "ARC190": return HitsInRow() > 0 ? 2 : 0;
-    case "CRU016": case "CRU017": case "CRU018": return GetClassState($mainPlayer, $CS_Num6PowDisc) > 0 ? 1 : 0;
-    case "CRU056": return ComboActive() ? 2 : 0;
-    case "CRU057": case "CRU058": case "CRU059": return ComboActive() ? 1 : 0;
-    case "CRU060": case "CRU061": case "CRU062": return ComboActive() ? 1 : 0;
-    case "CRU063": case "CRU064": case "CRU065": return NumChainLinks() >= 3 ? 2 : 0;
-    case "CRU073": return NumAttacksHit();
-    case "CRU083": return 3;
-    case "CRU112": case "CRU113": case "CRU114": return $combatChainState[$CCS_NumBoosted];
-    case "MON031": return GetClassState($mainPlayer, $CS_NumCharged) > 0 ? 3 : 0;
-    case "MON039": case "MON040": case "MON041": return GetClassState($mainPlayer, $CS_NumCharged) > 0 ? 3 : 0;
-    case "MON057": return GetClassState($mainPlayer, $CS_NumCharged) > 0 ? 3 : 0;
-    case "MON058": return GetClassState($mainPlayer, $CS_NumCharged) > 0 ? 2 : 0;
-    case "MON059": return GetClassState($mainPlayer, $CS_NumCharged) > 0 ? 1 : 0;
-    case "MON155": return GetClassState($mainPlayer, $CS_NumPlayedFromBanish) > 0 ? 2 : 0;
-    case "MON171": case "MON172": case "MON173": return GetClassState($defPlayer, $CS_ArcaneDamageTaken) > 0 ? 2 : 0;
-    case "MON254": case "MON255": case "MON256": return GetClassState($mainPlayer, $CS_CardsBanished) > 0 ? 2 : 0;
-    case "MON284": case "MON285": case "MON286": return NumCardsNonEquipBlocking() < 2 ? 1 : 0;
-    case "MON287": case "MON288": case "MON289": return NumCardsNonEquipBlocking();
-    case "MON290": case "MON291": case "MON292": return count($mainAuras) >= 1 ? 1 : 0;
-    case "ELE082": case "ELE083": case "ELE084": return GetClassState($defPlayer,  $CS_ArcaneDamageTaken) >= 1 ? 2 : 0;
-    case "ELE134": case "ELE135": case "ELE136": return $from == "ARS" ? 1 : 0;
-    case "ELE202":
-      $pitch = &GetPitch($mainPlayer);
-      return CountPitch($pitch, 3) >= 1 ? 1 : 0;
-    case "EVR038": return (ComboActive() ? 3 : 0);
-    case "EVR040": return (ComboActive() ? 2 : 0);
-    case "EVR041": case "EVR042": case "EVR043": return (ComboActive() ? NumChainLinksWithName("Hundred Winds") - 1 : 0);
-    case "EVR063": return 3;
-    case "EVR064": return 2;
-    case "EVR065": return 1;
-    case "EVR105": return (GetClassState($mainPlayer, $CS_NumAuras) >= 2 ? 1 : 0);
-    case "EVR116": case "EVR117": case "EVR118": return (GetClassState($mainPlayer, $CS_NumAuras) > 0 ? 3 : 0);
-    case "DVR002": return GetClassState($mainPlayer, $CS_AtksWWeapon) >= 1 ? 1 : 0;
-    case "RVD009": return IntimidateCount($mainPlayer) > 0 ? 2 : 0;
-    case "UPR048": return (NumChainLinksWithName("Phoenix Flame") >= 2 ? 2 : 0);
-    case "UPR050": return 1;
-    case "UPR098": return (RuptureActive() ? 3 : 0);
-    case "UPR101": return (NumDraconicChainLinks() >= 2 ? 1 : 0);
-    case "UPR162": return 3;
-    case "UPR163": return 2;
-    case "UPR164": return 1;
-    case "DYN047": return (ComboActive() ? 2 : 0);
-    case "DYN056": case "DYN057": case "DYN058": return (ComboActive() ? 1 : 0);
-    case "DYN059": case "DYN060": case "DYN061": return (ComboActive() ? 4 : 0);
-    case "DYN079": return 3 + (NumEquipBlock() > 0 ? 1 : 0);
-    case "DYN080": return 2 + (NumEquipBlock() > 0 ? 1 : 0);
-    case "DYN081": return 1 + (NumEquipBlock() > 0 ? 1 : 0);
-    case "DYN115": case "DYN116": return NumEquipBlock() > 0 ? 1 : 0;
-    case "OUT005": case "OUT006": return NumEquipBlock() > 0 ? 1 : 0;
-    case "OUT007": case "OUT008": return NumEquipBlock() > 0 ? 1 : 0;
-    case "OUT009": case "OUT010": return NumEquipBlock() > 0 ? 1 : 0;
-    case "OUT018": case "OUT019": case "OUT020": return (NumAttackReactionsPlayed() > 0 ? 4 : 0);
-    case "OUT051": return (ComboActive() ? 2 : 0);
-    case "OUT054": return 1;
-    case "OUT062": case "OUT063": case "OUT064": return (ComboActive() ? 1 : 0);
-    case "OUT074": case "OUT075": case "OUT076": return (ComboActive() ? 2 : 0);
-    case "OUT133": case "OUT134": case "OUT135": return NumCardsDefended() < 2 ? 3 : 0;
-    case "OUT181": return 1;
-    case "OUT207": case "OUT208": case "OUT209": return (NumActionsBlocking() > 0 ? 2 : 0);
-    case "OUT210": case "OUT211": case "OUT212": return (NumActionsBlocking() > 0 ? -2 : 0);
+    case "HWFWO0TB8l": return IsClassBonusActive($mainPlayer, "TAMER") ? 2 : 0;//Tempest Silverback
+    case "krgjMyVHRd": return SearchDiscard($mainPlayer, element:"WATER");//Lakeside Serpent
+    case "LUfgfsWTTO": return SearchDiscard($mainPlayer, element:"FIRE");//Fiery Momentum
+    case "vBetRTn3eW": if(IsClassBonusActive($mainPlayer, "WARRIOR")) { $memory = &GetMemory($mainPlayer); return count($memory)/MemoryPieces() == 1 ? 2 : 0; } return 0;//Opening Cut
+    case "TgYTZg6TaG": return (IsClassBonusActive($mainPlayer, "WARRIOR") ? 1 : 0);
+    case "7NMFSRR5V3": return SearchCount(SearchAllies($playerID, subtype:"BEAST")) > 0 ? 1 : 0;//Fervent Beastmaster
+    case "csMiEObm2l": return CharacterLevel($playerID) >= 3 && IsClassBonusActive($playerID, "WARRIOR") ? 1 :0;//Strapping Conscript
+    case "LNSRQ5xW6E"://Stillwater Patrol
+      $target = GetAttackTarget();
+      $targetArr = explode("-", $target);
+      if($targetArr != "THEIRALLY") return 0;
+      $allies = &GetAllies($defPlayer);
+      return HasStealth($allies[$targetArr[1]], $defPlayer, $targetArr[1]) ? 1 : 0;
+    case "dpu9pHGX48"://Sword of Adversity
+      if(!IsClassBonusActive($mainPlayer, "WARRIOR")) return 0;
+      $allies = &GetAllies($mainPlayer);
+      return count($allies) == 0 ? 1 : 0;
+    case "jF1VuIR7a6"://Warrior's Longsword
+      return IsClassBonusActive($mainPlayer, "WARRIOR") ? 1 : 0;
+    case "FGvq4eQPbP"://Flame Sweep
+      return IsClassBonusActive($mainPlayer, "WARRIOR") && CharacterLevel($mainPlayer) >= 2 ? 1 : 0;
+    case "W1g0hNzXAC"://Invigorated Slash
+      return GetClassState($mainPlayer, $CS_NumLeveledUp) > 0 ? 2 : 0;
+    case "mDN1CI9IEe"://Sealed Blade
+      return IsClassBonusActive($mainPlayer, "WARRIOR") ? 1 : 0;
+    case "JAs9SmLqUS"://Gildas, Chronicler of Aesa
+      $memory = &GetMemory($mainPlayer);
+      $hand = &GetHand($mainPlayer);
+      return (count($memory)/MemoryPieces() == count($hand)/HandPieces() ? 3 : 0);
+    case "sxg6WefxIe"://Backstab
+      return IsClassBonusActive($mainPlayer, "ASSASSIN") && IsAttackTargetRested() ? 2 : 0;
+    case "gSNyXOQ4Iw": case "tOK1Gr0N8f": case "UAF6Nr7GUE"://Zander, Always Watching
+      return IsAttackTargetRested() ? 1 : 0;
+    case "Q2ugqVm04E"://Curved Dagger
+      return IsAllyAttackTarget() && IsClassBonusActive($mainPlayer, "ASSASSIN") ? 1 : 0;
+    case "3traenEA8M"://Galatine, Sword of Sunlight
+      if(!IsClassBonusActive($mainPlayer, "WARRIOR")) return 0;
+      $index = FindCharacterIndex($mainPlayer, "3traenEA8M");
+      $char = &GetPlayerCharacter($mainPlayer);
+      return $index == -1 ? 0 : floor($char[$index+2]/3);
     default: return 0;
   }
 }

@@ -76,8 +76,7 @@ function uidExists($conn, $username)
 // Insert new user into database
 function createUser($conn, $username, $email, $pwd, $reportingServer = false)
 {
-	if ($reportingServer) $conn = GetReportingDBConnection();
-	else $conn = GetDBConnection();
+	$conn = GetDBConnection();
 	$sql = "INSERT INTO users (usersUid, usersEmail, usersPwd) VALUES (?, ?, ?);";
 
 	$stmt = mysqli_stmt_init($conn);
@@ -385,7 +384,7 @@ function SerializeGameResult($player, $DeckLink, $deckAfterSB, $gameID = "", $op
 		$deck["cardResults"][$i]["blocked"] = 0;
 		$deck["cardResults"][$i]["pitched"] = 0;
 		$deck["cardResults"][$i]["cardName"] = CardName($deduplicatedDeck[$i]);
-		$deck["cardResults"][$i]["pitchValue"] = PitchValue($deduplicatedDeck[$i]);
+		//$deck["cardResults"][$i]["pitchValue"] = PitchValue($deduplicatedDeck[$i]);
 	}
 	$cardStats = &GetCardStats($player);
 	for ($i = 0; $i < count($cardStats); $i += CardStatPieces()) {
@@ -473,6 +472,8 @@ function LoadBadges($userID)
 
 function GetMyAwardableBadges($userID)
 {
+	return [];
+	/*
 	if ($userID == "") return "";
 	$output = [];
 	$conn = GetDBConnection();
@@ -489,6 +490,7 @@ function GetMyAwardableBadges($userID)
 	}
 	mysqli_close($conn);
 	return $output;
+	*/
 }
 
 function AwardBadge($userID, $badgeID)

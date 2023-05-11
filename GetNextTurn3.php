@@ -92,6 +92,37 @@ while ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
   if ($count == 100) break;
 }
 
+if($lastUpdate == 0)
+{
+  $currentTime = round(microtime(true) * 1000);
+  $cacheVal = GetCachePiece($gameName, 1);
+  if ($isGamePlayer) {
+    SetCachePiece($gameName, $playerID + 1, $currentTime);
+    $otherP = ($playerID == 1 ? 2 : 1);
+    $oppLastTime = intval(GetCachePiece($gameName, $otherP + 1));
+    $oppStatus = GetCachePiece($gameName, $otherP + 3);
+    if (($currentTime - $oppLastTime) > 3000 && (intval($oppStatus) == 0)) {
+      WriteLog("Opponent has disconnected. Waiting 60 seconds to reconnect.");
+      GamestateUpdated($gameName);
+      SetCachePiece($gameName, $otherP + 3, "1");
+    } else if (($currentTime - $oppLastTime) > 60000 && $oppStatus == "1") {
+      WriteLog("Opponent has left the game.");
+      GamestateUpdated($gameName);
+      SetCachePiece($gameName, $otherP + 3, "2");
+      $lastUpdate = 0;
+      $opponentDisconnected = true;
+    }
+    //Handle server timeout
+    $lastUpdateTime = GetCachePiece($gameName, 6);
+    if ($currentTime - $lastUpdateTime > 90000 && GetCachePiece($gameName, 12) != "1") //90 seconds
+    {
+      SetCachePiece($gameName, 12, "1");
+      $opponentInactive = true;
+      $lastUpdate = 0;
+    }
+  }
+}
+
 if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
   echo "0";
   exit;
@@ -320,10 +351,6 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     array_push($opponentBanishArr, JSONRenderedCard($cardID));
   }
   $response->opponentBanish = $opponentBanishArr;
-  if (TalentContains($theirCharacter[0], "SHADOW")) {
-    $response->opponentBloodDebtCount = SearchCount(SearchBanish($otherPlayer, "", "", -1, -1, "", "", true));
-    $response->isOpponentBloodDebtImmune = IsImmuneToBloodDebt($otherPlayer);
-  }
 
   //Now display their character and equipment
   $numWeapons = 0;
@@ -406,10 +433,6 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     array_push($playerBanishArr, JSONRenderedCard($banish[$i], action: $action, borderColor: $border, actionDataOverride: strval($i)));
   }
   $response->playerBanish = $playerBanishArr;
-  if (TalentContains($myCharacter[0], "SHADOW")) {
-    $response->myBloodDebtCount = SearchCount(SearchBanish($playerID, "", "", -1, -1, "", "", true));
-    $response->amIBloodDebtImmune = IsImmuneToBloodDebt($playerID);
-  }
 
   //Now display my character and equipment
   $numWeapons = 0;
@@ -870,6 +893,10 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       else if ($option[0] == "THEIRPITCH") $source = $theirPitch;
       else if ($option[0] == "MYDECK") $source = $myDeck;
       else if ($option[0] == "THEIRDECK") $source = $theirDeck;
+      else if ($option[0] == "MYMATERIAL") $source = $myMaterial;
+      else if ($option[0] == "THEIRMATERIAL") $source = $theirMaterial;
+      else if ($option[0] == "MYMEMORY") $source = &GetMemory($playerID);
+      else if ($option[0] == "THEIRMEMORY") $source = &GetMemory($playerID == 1 ? 2 : 1);
       else if ($option[0] == "LANDMARK") $source = $landmarks;
       else if ($option[0] == "CC") $source = $combatChain;
       else if ($option[0] == "COMBATCHAINLINK") $source = $combatChain;
@@ -1001,7 +1028,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     $playerInputPopup->popup = ChoosePopup($theirCharacter, $turn[2], 16, "Choose a card from your opponent character/equipment", CharacterPieces());
   }
 
-  if (($turn[0] == "MULTICHOOSETHEIRDISCARD" || $turn[0] == "MULTICHOOSEDISCARD" || $turn[0] == "MULTICHOOSEHAND" || $turn[0] == "MAYMULTICHOOSEHAND" || $turn[0] == "MULTICHOOSEDECK" || $turn[0] == "MULTICHOOSETEXT" || $turn[0] == "MAYMULTICHOOSETEXT" || $turn[0] == "MULTICHOOSETHEIRDECK") && $currentPlayer == $playerID) {
+  if (($turn[0] == "MULTICHOOSETHEIRDISCARD" || $turn[0] == "MULTICHOOSEDISCARD" || $turn[0] == "MULTICHOOSEHAND" || $turn[0] == "MAYMULTICHOOSEHAND" || $turn[0] == "MULTICHOOSEMATERIAL" || $turn[0] == "MULTICHOOSEDECK" || $turn[0] == "MULTICHOOSETEXT" || $turn[0] == "MAYMULTICHOOSETEXT" || $turn[0] == "MULTICHOOSETHEIRDECK" || $turn[0] == "MAYMULTICHOOSEAURAS") && $currentPlayer == $playerID) {
     $playerInputPopup->active = true;
     $formOptions = new stdClass();
     $cardsArray = array();
@@ -1038,6 +1065,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
         else if ($turn[0] == "MULTICHOOSEHAND" || $turn[0] == "MAYMULTICHOOSEHAND") array_push($cardsArray, JSONRenderedCard($myHand[$options[$i]], actionDataOverride: $i));
         else if ($turn[0] == "MULTICHOOSEDECK") array_push($cardsArray, JSONRenderedCard($myDeck[$options[$i]], actionDataOverride: $i));
         else if ($turn[0] == "MULTICHOOSETHEIRDECK") array_push($cardsArray, JSONRenderedCard($theirDeck[$options[$i]], actionDataOverride: $i));
+        else if ($turn[0] == "MAYMULTICHOOSEAURAS") array_push($cardsArray, JSONRenderedCard($myAuras[$options[$i]], actionDataOverride: $i));
       }
       $caption = "Choose up to $params[0] card" . ($params[0] > 1 ? "s." : ".");
       $playerInputPopup->popup = CreatePopupAPI("MULTICHOOSE", [], 0, 1, $caption, 1, cardsArray: $cardsArray);

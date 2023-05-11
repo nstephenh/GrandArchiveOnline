@@ -64,9 +64,12 @@ if (isset($_SESSION["userid"])) {
     }
   }
   if (count($favoriteDecks) == 0) {
-    echo ("<label for='decksToTry'>Starter Decks");
-    echo ("<option value='1'>Ira Welcome Deck</option>");
-    echo ("</select></label><br>");
+    echo ("<div><label class='SelectDeckInput'>Starter Decks: </label>");
+    echo ("<select name='decksToTry' id='decksToTry'>");
+    echo ("<option value='1'>Lorraine Starter</option>");
+    echo ("<option value='2'>Silvie Starter</option>");
+    echo ("<option value='3'>Rai Starter</option>");
+    echo ("</select></div>");
   }
 
   ?>

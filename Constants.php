@@ -110,6 +110,7 @@ function ArsenalPieces()
 {
   return 6;
 }
+function MemoryPieces() { return ArsenalPieces(); }
 
 //0 - Card ID
 //1 - Status: 2 = ready
@@ -176,7 +177,7 @@ function DecisionQueuePieces()
 }
 
 //0 - Card ID
-function SoulPieces()
+function MaterialPieces()
 {
   return 1;
 }
@@ -204,8 +205,8 @@ $CS_ArsenalFacing = 8;
 $CS_CharacterIndex = 9;
 $CS_PlayIndex = 10;
 $CS_NumNonAttackCards = 11;
-$CS_NumMoonWishPlayed = 12; //Deprecated. Use current effect ARC185-GA instead
-$CS_NumAddedToSoul = 13;
+$CS_CachedCharacterLevel = 12;
+$CS_PreparationCounters = 13;
 $CS_NextNAACardGoAgain = 14;
 $CS_NumCharged = 15;
 $CS_Num6PowBan = 16;
@@ -215,8 +216,8 @@ $CS_ArcaneDamageTaken = 19;
 $CS_NextNAAInstant = 20;
 $CS_NextDamagePrevented = 21;
 $CS_LastAttack = 22;
-$CS_NumFusedEarth = 23;
-$CS_NumFusedIce = 24;
+$CS_NumLeveledUp = 23;
+$CS_NumMaterializations = 24;
 $CS_NumFusedLightning = 25;
 $CS_PitchedForThisCard = 26;
 $CS_PlayCCIndex = 27;
@@ -233,7 +234,7 @@ $CS_ArcaneDamagePrevention = 37;
 $CS_DynCostResolved = 38;
 $CS_CardsEnteredGY = 39;
 $CS_HighestRoll = 40;
-$CS_EffectContext = 41; //Deprecated -- use $EffectContext instead
+$CS_NumMelodyPlayed = 41;
 $CS_NumAuras = 42;
 $CS_AbilityIndex = 43;
 $CS_AdditionalCosts = 44;
@@ -429,15 +430,15 @@ function ResetMainClassState()
 {
   global $mainClassState, $CS_Num6PowDisc, $CS_NumBoosted, $CS_AtksWWeapon, $CS_HitsWDawnblade, $CS_DamagePrevention, $CS_CardsBanished;
   global $CS_DamageTaken, $CS_NumActionsPlayed, $CS_CharacterIndex, $CS_PlayIndex, $CS_NumNonAttackCards;
-  global $CS_NumAddedToSoul, $CS_NextNAACardGoAgain, $CS_NumCharged, $CS_Num6PowBan, $CS_ResolvingLayerUniqueID, $CS_NextWizardNAAInstant;
+  global $CS_PreparationCounters, $CS_NextNAACardGoAgain, $CS_NumCharged, $CS_Num6PowBan, $CS_ResolvingLayerUniqueID, $CS_NextWizardNAAInstant;
   global $CS_ArcaneDamageTaken, $CS_NextNAAInstant, $CS_NextDamagePrevented, $CS_LastAttack, $CS_PlayCCIndex;
-  global $CS_NumFusedEarth, $CS_NumFusedIce, $CS_NumFusedLightning, $CS_PitchedForThisCard, $CS_NumAttackCards, $CS_NumPlayedFromBanish;
+  global $CS_NumLeveledUp, $CS_NumMaterializations, $CS_NumFusedLightning, $CS_PitchedForThisCard, $CS_NumAttackCards, $CS_NumPlayedFromBanish;
   global $CS_NumAttacks, $CS_DieRoll, $CS_NumBloodDebtPlayed, $CS_NumWizardNonAttack, $CS_LayerTarget, $CS_NumSwordAttacks;
   global $CS_HitsWithWeapon, $CS_ArcaneDamagePrevention, $CS_DynCostResolved, $CS_CardsEnteredGY;
   global $CS_HighestRoll, $CS_NumAuras, $CS_AbilityIndex, $CS_AdditionalCosts, $CS_NumRedPlayed, $CS_PlayUniqueID, $CS_AlluvionUsed;
   global $CS_NumPhantasmAADestroyed, $CS_NumLess3PowAAPlayed, $CS_MaxQuellUsed, $CS_DamageDealt, $CS_ArcaneTargetsSelected, $CS_NumDragonAttacks, $CS_NumIllusionistAttacks;
   global $CS_LastDynCost, $CS_NumIllusionistActionCardAttacks, $CS_ArcaneDamageDealt, $CS_LayerPlayIndex, $CS_NumCardsPlayed, $CS_NamesOfCardsPlayed, $CS_NumBoostPlayed;
-  global $CS_PlayedAsInstant, $CS_AnotherWeaponGainedGoAgain, $CS_NumContractsCompleted, $CS_HitsWithSword;
+  global $CS_PlayedAsInstant, $CS_AnotherWeaponGainedGoAgain, $CS_NumContractsCompleted, $CS_HitsWithSword, $CS_NumMelodyPlayed;
 
   $mainClassState[$CS_Num6PowDisc] = 0;
   $mainClassState[$CS_NumBoosted] = 0;
@@ -450,7 +451,7 @@ function ResetMainClassState()
   $mainClassState[$CS_CharacterIndex] = 0;
   $mainClassState[$CS_PlayIndex] = -1;
   $mainClassState[$CS_NumNonAttackCards] = 0;
-  $mainClassState[$CS_NumAddedToSoul] = 0;
+  $mainClassState[$CS_PreparationCounters] = 0;
   $mainClassState[$CS_NextNAACardGoAgain] = 0;
   $mainClassState[$CS_NumCharged] = 0;
   $mainClassState[$CS_Num6PowBan] = 0;
@@ -460,8 +461,8 @@ function ResetMainClassState()
   $mainClassState[$CS_NextNAAInstant] = 0;
   $mainClassState[$CS_NextDamagePrevented] = 0;
   $mainClassState[$CS_LastAttack] = "NA";
-  $mainClassState[$CS_NumFusedEarth] = 0;
-  $mainClassState[$CS_NumFusedIce] = 0;
+  $mainClassState[$CS_NumLeveledUp] = 0;
+  $mainClassState[$CS_NumMaterializations] = 0;
   $mainClassState[$CS_NumFusedLightning] = 0;
   $mainClassState[$CS_PitchedForThisCard] = "-";
   $mainClassState[$CS_PlayCCIndex] = -1;
@@ -478,6 +479,7 @@ function ResetMainClassState()
   $mainClassState[$CS_DynCostResolved] = 0;
   $mainClassState[$CS_CardsEnteredGY] = 0;
   $mainClassState[$CS_HighestRoll] = 0;
+  $mainClassState[$CS_NumMelodyPlayed] = 0;
   $mainClassState[$CS_NumAuras] = 0;
   $mainClassState[$CS_AbilityIndex] = "-";
   $mainClassState[$CS_AdditionalCosts] = "-";
@@ -519,6 +521,14 @@ function ResetCharacterEffects()
   $defCharacterEffects = [];
 }
 
+function SetAttackTarget($mzTarget)
+{
+  global $combatChainState, $CCS_AttackTarget, $CCS_AttackTargetUID, $defPlayer, $combatChain;
+  if(count($combatChain) == 0 || $mzTarget == "") return;
+  $mzArr = explode("-", $mzTarget);
+  $combatChainState[$CCS_AttackTarget] = "THEIRALLY-" . $mzTarget[1];
+  $combatChainState[$CCS_AttackTargetUID] = MZGetUniqueID($mzTarget, $defPlayer);
+}
 
 function GetAttackTarget()
 {

@@ -12,7 +12,7 @@ function PhaseName($phase)
     case "D":
       return "Defense Reaction";
     case "P":
-      return "Pitch";
+      return "Reserve";
     case "ARS":
       return "Arsenal";
   }
@@ -22,6 +22,7 @@ function TypeToPlay($phase)
 {
   global $turn;
   switch ($phase) {
+    case "MAT": return "a card to materialize";
     case "M":
       return "an Action";
     case "B":
@@ -31,7 +32,7 @@ function TypeToPlay($phase)
     case "D":
       return "a reaction";
     case "P":
-      return "a card to pitch";
+      return "a card to reserve";
     case "ARS":
       return "a card to add to arsenal";
     case "PDECK":
@@ -76,8 +77,12 @@ function TypeToPlay($phase)
       return "cards from hand";
     case "MAYMULTICHOOSEHAND":
       return "cards from hand";
+    case "MAYMULTICHOOSEAURAS":
+      return "cards from play";
     case "MULTICHOOSEDECK":
       return "cards from deck";
+    case "MULTICHOOSEMATERIAL":
+      return "cards from material deck";
     case "YESNO":
       return str_replace("_", " ", $turn[2]);
     case "MULTICHOOSETEXT":
@@ -124,7 +129,7 @@ function PlayTerm($phase, $from="", $cardID="")
   }
   switch ($phase) {
     case "P":
-      return "pitched";
+      return "reserved";
     case "B":
       return "blocked with";
     default:

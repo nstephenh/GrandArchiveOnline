@@ -34,6 +34,8 @@ function MZRemove($player, $lastResult)
   for($i = 0; $i < count($lastResultArr); ++$i) {
     $mzIndex = explode("-", $lastResultArr[$i]);
     switch($mzIndex[0]) {
+      case "MYCHAR": $lastResult = RemoveCharacter($player, $mzIndex[1]); break;
+      case "MYITEMS": $lastResult = DestroyItemForPlayer($player, $mzIndex[1], true); break;
       case "MYDISCARD": $lastResult = RemoveGraveyard($player, $mzIndex[1]); break;
       case "THEIRDISCARD": $lastResult = RemoveGraveyard($otherPlayer, $mzIndex[1]); break;
       case "MYBANISH": RemoveBanish($player, $mzIndex[1]); break;
@@ -45,6 +47,8 @@ function MZRemove($player, $lastResult)
       case "MYHAND": $lastResult = RemoveHand($player, $mzIndex[1]); break;
       case "THEIRHAND": $lastResult = RemoveHand($otherPlayer, $mzIndex[1]); break;
       case "THEIRAURAS": RemoveAura($otherPlayer, $mzIndex[1]); break;
+      case "MYMEMORY": RemoveMemory($player, $mzIndex[1]); break;
+      case "THEIRMEMORY": RemoveMemory($otherPlayer, $mzIndex[1]); break;
       case "MYDECK":
         $deck = new Deck($player);
         return $deck->Remove($mzIndex[1]);
@@ -53,6 +57,17 @@ function MZRemove($player, $lastResult)
     }
   }
   return $lastResult;
+}
+
+function MZGetUniqueID($mzIndex, $player)
+{
+  $mzArr = explode("-", $mzIndex);
+  $zone = &GetMZZone($player, $mzArr[0]);
+  switch($mzArr[0]) {
+    case "ALLY": case "MYALLY": case "THEIRALLY": return $zone[$mzArr[1] + 5];
+    case "BANISH": case "MYBANISH": case "THEIRBANISH": return $zone[$mzArr[1] + 2];
+    default: return "-1";
+  }
 }
 
 function MZDiscard($player, $parameter, $lastResult)
@@ -94,6 +109,7 @@ function MZAddZone($player, $parameter, $lastResult)
       case "MYTOPDECK": AddTopDeck($cardIDs[$i], $player, "-"); break;
       case "MYBOTDECK": AddBottomDeck($cardIDs[$i], $player, "-"); break;
       case "THEIRBOTDECK": AddBottomDeck($cardIDs[$i], $otherPlayer, "-"); break;
+      case "MYMEMORY": AddMemory($cardIDs[$i], $player, $params[1], $params[2]);
       default: break;
     }
   }
@@ -142,6 +158,28 @@ function MZGainControl($player, $target)
   }
 }
 
+function MZBuffAlly($player, $target)
+{
+  $targetArr = explode("-", $target);
+  $allies = &GetAllies($player);
+  ++$allies[$targetArr[1]+7];//Buff counters
+  ++$allies[$targetArr[1]+2];//Life
+}
+
+function MZHealAlly($player, $target)
+{
+  $targetArr = explode("-", $target);
+  $allies = &GetAllies($player);
+  $allies[$targetArr[1]+2] = AllyHealth($allies[$targetArr[1]], $player);//Life
+}
+
+function MZAddHealth($player, $target)
+{
+  $targetArr = explode("-", $target);
+  $allies = &GetAllies($player);
+  ++$allies[$targetArr[1]+2];//Life
+}
+
 function MZFreeze($target)
 {
   global $currentPlayer;
@@ -149,34 +187,123 @@ function MZFreeze($target)
   $player = (substr($pieces[0], 0, 2) == "MY" ? $currentPlayer : ($currentPlayer == 1 ? 2 : 1));
   $zone = &GetMZZone($player, $pieces[0]);
   switch ($pieces[0]) {
-    case "THEIRCHAR":
-    case "MYCHAR":
-      $zone[$pieces[1] + 8] = 1;
+    case "THEIRCHAR": case "MYCHAR":
+      $zone[$pieces[1]+8] = 1;
       break;
-    case "THEIRALLY":
-    case "MYALLY":
-      $zone[$pieces[1] + 3] = 1;
+    case "THEIRALLY": case "MYALLY":
+      $zone[$pieces[1]+3] = 1;
       break;
-    case "THEIRARS":
-    case "MYARS":
-      $zone[$pieces[1] + 4] = 1;
+    case "THEIRARS": case "MYARS":
+      $zone[$pieces[1]+4] = 1;
       break;
     default:
       break;
   }
 }
 
+function MZRest($player, $target)
+{
+  $pieces = explode("-", $target);
+  $player = (substr($pieces[0], 0, 2) == "MY" ? $player : ($player == 1 ? 2 : 1));
+  $zone = &GetMZZone($player, $pieces[0]);
+  switch($pieces[0]) {
+    case "MYCHAR": case "THEIRCHAR":
+      $zone[$pieces[1]+1] = 1;
+      break;
+    case "THEIRALLY": case "MYALLY":
+      $zone[$pieces[1]+1] = 1;
+      break;
+    default: break;
+  }
+}
+
+function MZWakeUp($player, $target)
+{
+  $pieces = explode("-", $target);
+  $player = (substr($pieces[0], 0, 2) == "MY" ? $player : ($player == 1 ? 2 : 1));
+  $zone = &GetMZZone($player, $pieces[0]);
+  switch($pieces[0]) {
+    case "MYCHAR": case "THEIRCHAR":
+      $zone[$pieces[1]+1] = 2;
+      break;
+    case "THEIRALLY": case "MYALLY":
+      $zone[$pieces[1]+1] = 2;
+      break;
+    default: break;
+  }
+}
+
+function MZBounce($player, $target)
+{
+  $pieces = explode("-", $target);
+  $player = (substr($pieces[0], 0, 2) == "MY" ? $player : ($player == 1 ? 2 : 1));
+  $zone = &GetMZZone($player, $pieces[0]);
+  switch($pieces[0]) {
+    case "THEIRALLY": case "MYALLY":
+      $cardID = RemoveAlly($player, $pieces[1]);
+      AddHand($player, $cardID);
+      break;
+    default: break;
+  }
+}
+
+function MZSink($player, $target)
+{
+  $pieces = explode("-", $target);
+  $player = (substr($pieces[0], 0, 2) == "MY" ? $player : ($player == 1 ? 2 : 1));
+  $zone = &GetMZZone($player, $pieces[0]);
+  switch($pieces[0]) {
+    case "THEIRALLY": case "MYALLY":
+      $cardID = RemoveAlly($player, $pieces[1]);
+      AddBottomDeck($cardID, $player, "PLAY");
+      break;
+    default: break;
+  }
+}
+
+function MZSuppress($player, $target)
+{
+  $pieces = explode("-", $target);
+  $player = (substr($pieces[0], 0, 2) == "MY" ? $player : ($player == 1 ? 2 : 1));
+  $zone = &GetMZZone($player, $pieces[0]);
+  switch($pieces[0]) {
+    case "THEIRALLY": case "MYALLY":
+      $cardID = RemoveAlly($player, $pieces[1]);
+      BanishCardForPlayer($cardID, $player, "PLAY", "SUPPRESS", $player);
+      break;
+    case "THEIRITEMS": case "MYITEMS":
+      $cardID = DestroyItemForPlayer($player, $pieces[1], true);
+      BanishCardForPlayer($cardID, $player, "PLAY", "SUPPRESS", $player);
+      break;
+    case "THEIRCHAR": case "MYCHAR":
+      $cardID = RemoveCharacter($player, $pieces[1]);
+      BanishCardForPlayer($cardID, $player, "PLAY", "SUPPRESS", $player);
+      break;
+    default: break;
+  }
+}
+
+function MZEndCombat($player, $mzIndex)
+{
+  global $mainPlayer;
+  $mzArr = explode("-", $mzIndex);
+  if($mzArr[0] == "MYALLY") $controllingPlayer = $player;
+  else if($mzArr[0] == "THEIRALLY") $controllingPlayer = ($player == 1 ? 2 : 1);
+  else return;
+  if(IsSpecificAllyAttacking($controllingPlayer, $mzArr[1])) CloseCombatChain();
+}
+
 function IsFrozenMZ(&$array, $zone, $i)
 {
   $offset = FrozenOffsetMZ($zone);
-  if ($offset == -1) return false;
+  if($offset == -1) return false;
   return $array[$i + $offset] == "1";
 }
 
 function UnfreezeMZ($player, $zone, $index)
 {
   $offset = FrozenOffsetMZ($zone);
-  if ($offset == -1) return false;
+  if($offset == -1) return false;
   $array = &GetMZZone($player, $zone);
   $array[$index + $offset] = "0";
 }
@@ -232,4 +359,17 @@ function MZStartTurnAbility($player, $MZIndex)
       break;
     default: break;
   }
+}
+
+function MZMoveCard($player, $search, $where, $may=false, $isReveal=false, $silent=false, $isSubsequent=false)
+{
+  AddDecisionQueue("MULTIZONEINDICES", $player, $search, ($isSubsequent ? 1 : 0));
+  if($may) AddDecisionQueue("MAYCHOOSEMULTIZONE", $player, "<-", 1);
+  else AddDecisionQueue("CHOOSEMULTIZONE", $player, "<-", 1);
+  AddDecisionQueue("MZADDZONE", $player, $where, 1);
+  AddDecisionQueue("MZREMOVE", $player, "-", 1);
+  AddDecisionQueue("SETDQVAR", $player, "0", 1);
+  if($silent);
+  else if($isReveal) AddDecisionQueue("REVEALCARDS", $player, "-", 1);
+  else AddDecisionQueue("WRITELOG", $player, "Card chosen: <0>", 1);
 }

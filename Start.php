@@ -37,7 +37,7 @@ if ($authKey != $targetKey) { echo("Invalid auth key"); exit; }
 //First initialize the initial state of the game
 $filename = "./Games/" . $gameName . "/gamestate.txt";
 $handler = fopen($filename, "w");
-fwrite($handler, "20 20\r\n"); //Player health totals
+fwrite($handler, "0 0\r\n"); //Player health totals
 
 //Player 1
 $p1DeckHandler = fopen("./Games/" . $gameName . "/p1Deck.txt", "r");
@@ -54,10 +54,10 @@ fwrite($handler, "0\r\n"); //Game winner (0=none, else player ID)
 fwrite($handler, "$firstPlayer\r\n"); //First Player
 fwrite($handler, "1\r\n"); //Current Player
 fwrite($handler, "1\r\n"); //Current Turn
-fwrite($handler, "M 1\r\n"); //What phase/player is active
+fwrite($handler, "MAT 1\r\n"); //What phase/player is active
 fwrite($handler, "1\r\n"); //Action points
 fwrite($handler, "\r\n"); //Combat Chain
-fwrite($handler, "0 0 0 0 0 0 0 GY NA 0 0 0 0 0 0 0 NA 0 0 -1 -1 NA 0 0 0 -1 0 0 0 0 - 0 0 0 0\r\n"); //Combat Chain State
+fwrite($handler, "\r\n"); //Combat Chain State
 fwrite($handler, "\r\n"); //Current Turn Effects
 fwrite($handler, "\r\n"); //Current Turn Effects From Combat
 fwrite($handler, "\r\n"); //Next Turn Effects

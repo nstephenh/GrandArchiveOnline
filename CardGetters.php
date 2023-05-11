@@ -12,9 +12,12 @@ function &GetMZZone($player, $zone)
   else if ($zone == "MYHAND" || $zone == "THEIRHAND") $rv = &GetHand($player);
   else if ($zone == "MYPITCH" || $zone == "THEIRPITCH") $rv = &GetPitch($player);
   else if ($zone == "MYDISCARD" || $zone == "THEIRDISCARD") $rv = &GetDiscard($player);
+  else if ($zone == "MYITEMS" || $zone == "THEIRITEMS") $rv = &GetItems($player);
   else if ($zone == "PERM" || $zone == "MYPERM" || $zone == "THEIRPERM") $rv = &GetPermanents($player);
   else if ($zone == "BANISH" || $zone == "MYBANISH" || $zone == "THEIRBANISH") $rv = &GetBanish($player);
   else if ($zone == "DECK" || $zone == "MYDECK" || $zone == "THEIRDECK") $rv = &GetDeck($player);
+  else if ($zone == "MATERIAL" || $zone == "MYMATERIAL" || $zone == "THEIRMATERIAL") $rv = &GetMaterial($player);
+  else if ($zone == "MEMORY" || $zone == "MYMEMORY" || $zone == "THEIRMEMORY") $rv = &GetMemory($player);
   else if ($zone == "LAYER") return $layers;
   else if ($zone == "CC") return $combatChain;
   return $rv;
@@ -182,17 +185,17 @@ function &GetItems($player)
   }
 }
 
-function &GetSoul($player)
+function &GetMaterial($player)
 {
   global $currentPlayer, $mainPlayer, $mainPlayerGamestateStillBuilt;
-  global $mySoul, $theirSoul, $mainSoul, $defSoul;
+  global $myMaterial, $theirMaterial, $mainMaterial, $defMaterial;
   global $myStateBuiltFor;
   if ($mainPlayerGamestateStillBuilt) {
-    if ($player == $mainPlayer) return $mainSoul;
-    else return $defSoul;
+    if ($player == $mainPlayer) return $mainMaterial;
+    else return $defMaterial;
   } else {
-    if ($player == $myStateBuiltFor) return $mySoul;
-    else return $theirSoul;
+    if ($player == $myStateBuiltFor) return $myMaterial;
+    else return $theirMaterial;
   }
 }
 
@@ -207,6 +210,20 @@ function &GetDiscard($player)
   } else {
     if ($player == $myStateBuiltFor) return $myDiscard;
     else return $theirDiscard;
+  }
+}
+
+function &GetMemory($player)
+{
+  global $currentPlayer, $mainPlayer, $mainPlayerGamestateStillBuilt;
+  global $myArsenal, $theirArsenal, $mainArsenal, $defArsenal;
+  global $myStateBuiltFor;
+  if ($mainPlayerGamestateStillBuilt) {
+    if ($player == $mainPlayer) return $mainArsenal;
+    else return $defArsenal;
+  } else {
+    if ($player == $myStateBuiltFor) return $myArsenal;
+    else return $theirArsenal;
   }
 }
 
@@ -354,16 +371,6 @@ function ArsenalEmpty($player)
 {
   $arsenal = &GetArsenal($player);
   return count($arsenal) == 0;
-}
-
-function NumEquipment($player)
-{
-  $character = &GetPlayerCharacter($player);
-  $numEquip = 0;
-  for ($i = 0; $i < count($character); $i += CharacterPieces()) {
-    if (CardType($character[$i]) == "E" && $character[$i + 1] != 0) ++$numEquip;
-  }
-  return $numEquip;
 }
 
 function ActiveCharacterEffects($player, $index)

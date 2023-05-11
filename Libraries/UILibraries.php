@@ -272,19 +272,10 @@
     //$file = "'./" . "CardImages" . "/" . $cardNumber . ".png'";
     $name = CardName($cardNumber);
     if($name == "") return "";
-    $pitchValue = PitchValue($cardNumber);
-    $pitchText = "";
-    switch($pitchValue)
-    {
-      case 3: $color = "#009DDF"; $pitchText = " (3)"; break;
-      case 2: $color = "GoldenRod"; $pitchText = " (2)"; break;
-      case 1: $color = "#AF1518"; $pitchText = " (1)"; break;
-      default: $color = "DimGray"; break;
-    }
-    if(function_exists("IsColorblindMode") && !IsColorblindMode($playerID)) $pitchText = "";
+      $color = "DimGray";
     //$file = "'./" . "BigCardImages" . "/" . $cardNumber . ".png'";
     $file = "'./" . "WebpImages" . "/" . $cardNumber . ".webp'";
-    return "<b><span style='color:" . $color . "; cursor:default;' onmouseover=\"ShowDetail(event," . $file . ")\" onmouseout='HideCardDetail()'>" . $name . $pitchText . "</span></b>";
+    return "<b><span style='color:" . $color . "; cursor:default;' onmouseover=\"ShowDetail(event," . $file . ")\" onmouseout='HideCardDetail()'>" . $name . "</span></b>";
   }
 
 ?>

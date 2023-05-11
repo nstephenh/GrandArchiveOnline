@@ -44,10 +44,12 @@ if ($handle = opendir($path)) {
       $lastGamestateUpdate = intval(GetCachePiece($gameToken, 6));
       if ($currentTime - $lastGamestateUpdate < 30000) {
         $p1Hero = GetCachePiece($gameToken, 7);
-        $p2Hero = GetCachePiece($gameToken, 8);
-        if($p2Hero != "") $gameInProgressCount += 1;
+        //$p2Hero = GetCachePiece($gameToken, 8);
+        //if($p2Hero != "") $gameInProgressCount += 1;
+        $gameInProgressCount += 1;
         $visibility = GetCachePiece($gameToken, 9);
-        if ($p2Hero != "" && $visibility == "1") {
+        //if ($p2Hero != "" && $visibility == "1") {
+        if ($visibility == "1") {
           $spectateLinks .= "<form style='text-align:center;' action='" . $reactFE . "'>";
           $spectateLinks .= "<center><table><tr><td style='vertical-align:middle; padding-left:8px; width:50px; height: 40px;'>";
           if ($p1Hero == "") {
@@ -131,17 +133,8 @@ if ($handle = opendir($path)) {
   closedir($handle);
 }
 if ($canSeeQueue) {
-  echo ("<h3 style='width:100%; text-align:center; color:RGB(240,240,240);'>Blitz</h3>");
-  echo ($blitzLinks);
-  echo ("<h4 style='text-align:center;'>______________________</h4>");
-  echo ("<h3 style='width:100%; text-align:center; color:RGB(240,240,240);'>Competitive Blitz</h3>");
-  echo ($compBlitzLinks);
-  echo ("<h4 style='text-align:center;'>______________________</h4>");
-  echo ("<h3 style='width:100%; text-align:center; color:RGB(240,240,240);'>Classic Constructed</h3>");
+  echo ("<h3 style='width:100%; text-align:center; color:RGB(240,240,240);'>Standard Constructed</h3>");
   echo ($ccLinks);
-  echo ("<h4 style='text-align:center;'>______________________</h4>");
-  echo ("<h3 title='This game mode is intended for training for high level regional and national events.' style='cursor:default; width:100%; text-align:center;'>Competitive CC</h3>");
-  echo ($compCCLinks);
   echo ("<h4 style='text-align:center;'>______________________</h4>");
   echo ("<h3 style='width:100%; text-align:center; color:RGB(240,240,240);'>Other Formats</h3>");
   echo ($otherFormatsLinks);

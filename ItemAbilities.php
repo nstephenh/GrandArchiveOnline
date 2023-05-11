@@ -9,7 +9,7 @@ function PutItemIntoPlay($item, $steamCounterModifier = 0)
 function PutItemIntoPlayForPlayer($item, $player, $steamCounterModifier = 0, $number = 1)
 {
   $otherPlayer = ($player == 1 ? 2 : 1);
-  if(!DelimStringContains(CardSubType($item), "Item")) return;
+  if(!CardTypeContains($item, "ITEM")) return;
   $items = &GetItems($player);
   $myHoldState = ItemDefaultHoldTriggerState($item);
   if($myHoldState == 0 && HoldPrioritySetting($player) == 1) $myHoldState = 1;
@@ -20,7 +20,7 @@ function PutItemIntoPlayForPlayer($item, $player, $steamCounterModifier = 0, $nu
     $steamCounters = SteamCounterLogic($item, $player, $uniqueID) + $steamCounterModifier;
     array_push($items, $item);
     array_push($items, $steamCounters);
-    array_push($items, 2);
+    array_push($items, ItemEntersPlayState($item));
     array_push($items, ItemUses($item));
     array_push($items, $uniqueID);
     array_push($items, $myHoldState);
@@ -28,10 +28,18 @@ function PutItemIntoPlayForPlayer($item, $player, $steamCounterModifier = 0, $nu
   }
 }
 
+function ItemEntersPlayState($cardID)
+{
+  switch($cardID)
+  {
+    case "s23UHXgcZq": return 1;//Luxera's Map
+    default: return 2;
+  }
+}
+
 function ItemUses($cardID)
 {
   switch($cardID) {
-    case "EVR070": return 3;
     default: return 1;
   }
 }
@@ -41,36 +49,60 @@ function PayItemAbilityAdditionalCosts($cardID, $from)
   global $currentPlayer, $CS_PlayIndex, $combatChain;
   $index = GetClassState($currentPlayer, $CS_PlayIndex);
   switch($cardID) {
-    case "WTR162":
-    case "WTR170": case "WTR171": case "WTR172":
-    case "ELE143": case "ELE172": case "ELE201":
-    case "EVR176": case "EVR177": case "EVR178":
-    case "EVR179": case "EVR180": case "EVR181":
-    case "EVR182": case "EVR183": case "EVR184":
-    case "EVR185": case "EVR186": case "EVR187":
-    case "OUT054":
+    case "LROrzTmh55"://Fire Resonance Bauble
+    case "2gv7DC0KID"://Grand Crusader's Ring
+    case "bHGUNMFLg9"://Wind Resonance Bauble
+    case "dSSRtNnPtw"://Water Resonance Bauble
+    case "Z9TCpaMJTc"://Bauble of Abundance
+    case "yDARN8eV6B"://Tome of Knowledge
+    case "UiohpiTtgs"://Chalice of Blood
+    case "P7hHZBVScB"://Orb of Glitter
+    case "6e7lRnczfL"://Horn of Beastcalling
+    case "BY0E8si926"://Orb of Regret
+    case "dmfoA7jOjy"://Crystal of Empowerment
+    case "IC3OU6vCnF"://Mana Limiter
+    case "hLHpI5rHIK"://Bauble of Mending
+    case "WAFNy2lY5t"://Melodious Flute
+    case "AKA19OwaCh"://Jewel of Englightenment
+    case "j5iQQPd2m5"://Crystal of Argus
+    case "ybdj1Db9jz"://Seed of Nature
+    case "EBWWwvSxr3"://Channeling Stone
+    case "kk46Whz7CJ"://Surveillance Stone
+    case "1XegCUjBnY"://Life Essence Amulet
+    case "OofVX5hX8X"://Poisoned Coating Oil
+    case "Tx6iJQNSA6"://Majestic Spirit's Crest
+    case "qYH9PJP7uM"://Blinding Orb
+    case "iiZtKTulPg"://Eye of Argus
+    case "llQe0cg4xJ"://Orb of Choking Fumes
+    case "ScGcOmkoQt"://Smoke Bombs
+    case "F1t18omUlx"://Beastbond Paws
+    case "2bzajcZZRD"://Map of Hidden Passage
+    case "usb5FgKvZX"://Sharpening Stone
+    case "xjuCkODVRx"://Beastbond Boots
+    case "yj2rJBREH8"://Safeguard Amulet
+    case "s23UHXgcZq"://Luxera's Map
+    case "EQZZsiUDyl"://Storm Tyrant's Eye
+      DestroyItemForPlayer($currentPlayer, $index, true);
+      BanishCardForPlayer($cardID, $currentPlayer, $from, "-", $currentPlayer);
+      break;
+    case "i0a5uhjxhk"://Blightroot (1)
+    case "5joh300z2s"://Mana Root (2)
+    case "bd7ozuj68m"://Silvershine (3)
+    case "soporhlq2k"://Fraysia (4)
+    case "jnltv5klry"://Razorvine (5)
+    case "69iq4d5vet"://Springleaf (6)
       DestroyItemForPlayer($currentPlayer, $index);
-      break;
-    case "ARC035":
-      $items = &GetItems($currentPlayer);
-      AddAdditionalCost($currentPlayer, $items[$index+1]);
-      DestroyItemForPlayer($currentPlayer, $index);
-      break;
-    case "ARC010": case "ARC018":
-      $items = &GetItems($currentPlayer);
-      if($from == "PLAY" && $items[$index+1] > 0 && count($combatChain) > 0) {
-        $items[$index+1] -= 1;
-        $items[$index+2] = 1;
-      }
-      break;
-    case "CRU105":
-      $items = &GetItems($currentPlayer);
-      if($from == "PLAY" && $items[$index+1] > 0) {
-        $items[$index+1] -= 1;
-        AddAdditionalCost($currentPlayer, "PAID");
-      }
       break;
     default: break;
+  }
+}
+
+function ItemBeginTurnEffects($player)
+{
+  $items = &GetItems($player);
+  for($i=0; $i<count($items); $i+=ItemPieces())
+  {
+    if($items[$i+2] == 1) $items[$i+2] = 2;
   }
 }
 
@@ -81,16 +113,6 @@ function ItemPlayAbilities($cardID, $from)
   for($i = count($items) - ItemPieces(); $i >= 0; $i -= ItemPieces()) {
     $remove = false;
     switch($items[$i]) {
-      case "EVR189":
-        if($from == "BANISH") {
-          $otherPlayer = ($currentPlayer == 1 ? 2 : 1);
-          AddDecisionQueue("SETDQCONTEXT", $currentPlayer, "Choose a card to banish with Talisman of Cremation");
-          AddDecisionQueue("FINDINDICES", $otherPlayer, "GY");
-          AddDecisionQueue("MAYCHOOSETHEIRDISCARD", $currentPlayer, "<-", 1);
-          AddDecisionQueue("SPECIFICCARD", $otherPlayer, "TALISMANOFCREMATION", 1);
-          $remove = true;
-        }
-        break;
       default: break;
     }
     if($remove) DestroyItemForPlayer($currentPlayer, $i);
@@ -178,8 +200,8 @@ function ItemStartTurnAbility($index)
   global $mainPlayer;
   $mainItems = &GetItems($mainPlayer);
   switch($mainItems[$index]) {
-    case "ARC007": case "ARC035": case "EVR069": case "EVR071":
-      AddLayer("TRIGGER", $mainPlayer, $mainItems[$index], "-", "-", $mainItems[$index + 4]);
+    case "P7hHZBVScB"://Orb of Glitter
+      PlayerOpt($mainPlayer, 1);
       break;
     default: break;
   }
@@ -192,9 +214,7 @@ function ItemEndTurnAbilities()
   for($i = count($items) - ItemPieces(); $i >= 0; $i -= ItemPieces()) {
     $remove = false;
     switch($items[$i]) {
-      case "EVR188":
-        $remove = TalismanOfBalanceEndTurn();
-        break;
+
       default: break;
     }
     if($remove) DestroyItemForPlayer($mainPlayer, $i);
@@ -226,21 +246,23 @@ function SteamCounterLogic($item, $playerID, $uniqueID)
 {
   global $CS_NumBoosted;
   $counters = ETASteamCounters($item);
-  switch($item) {
-    case "CRU104":
-      $counters += GetClassState($playerID, $CS_NumBoosted);
-      break;
-    default: break;
-  }
-  if(ClassContains($item, "MECHANOLOGIST", $playerID)) {
-    $items = &GetItems($playerID);
-    for($i=count($items)-ItemPieces(); $i>=0; $i-=ItemPieces()) {
-      if($items[$i] == "DYN093") {
-        AddLayer("TRIGGER", $playerID, $items[$i], $uniqueID, "-", $items[$i+4]);
-      }
+  return $counters;
+}
+
+function ItemLevelModifiers($player)
+{
+  $items = &GetItems($player);
+  $modifier = 0;
+  for($i=0; $i<count($items); $i+=ItemPieces())
+  {
+    switch($items[$i])
+    {
+      case "JPcFmCpdiF": if(SearchCount(SearchAllies($player, "", "BEAST")) + SearchCount(SearchAllies($player, "", "ANIMAL")) > 0) ++$modifier; break;//Beastbond Ears
+      case "WAFNy2lY5t": if(SearchCount(SearchAllies($player, "", "BEAST")) + SearchCount(SearchAllies($player, "", "ANIMAL")) > 0) ++$modifier; break;//Melodious Flute
+      default: break;
     }
   }
-  return $counters;
+  return $modifier;
 }
 
 

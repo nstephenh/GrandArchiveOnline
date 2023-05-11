@@ -44,7 +44,9 @@ $canSeeQueue = isset($_SESSION["useruid"]);
 </style>
 
 <div style="text-align: center; padding-top: 45px;">
-  <div style="display: inline-block; width:400px; height:180px; background-size: contain; background-image: url('Images/TalisharLogo.webp');"></div>
+  <!--<div style="display: inline-block; width:400px; height:180px; background-size: contain; background-image: url('Images/TalisharLogo.webp');"></div>-->
+  <h1 style='color:black;'>Clarent</h1>
+  <h3 style='color:black;'>A fan-made Grand Archive TCG Simulator</h3>
 </div>
 
 <div class="ContentWindow" style='width:27%; left:20px; top:60px; bottom:30px; overflow-y:auto;'>
@@ -62,7 +64,7 @@ if (IsMobile()) echo ("<div class='ContentWindow' style='top:240px; left:32%; wi
 else echo ("<div class='ContentWindow' style='top:225px; left:32%; width:36%; bottom: 30px; overflow-y:auto'>");
 
 ?>
-<h5>Talishar is an open-source, fan-made platform not associated with LSS. It may not be a completely accurate representation of the Rules as Written. If you have questions about interactions or rulings, please <a style='text-decoration: underline;' target='_blank' href='https://discord.gg/VFhYB9T7s8'>contact the judge community</a> for clarification.</h5>
+<h5>Clarent is an open-source, fan-made platform. It's still a work in progress so let us know if you find any bugs :)</h5>
 
 <h1><?php echo ($createNewGameText); ?></h1>
 
@@ -86,7 +88,9 @@ if (isset($_SESSION["userid"])) {
 if (count($favoriteDecks) == 0) {
   echo ("<div><label class='SelectDeckInput'>" . $starterDecksText . ": </label>");
   echo ("<select name='decksToTry' id='decksToTry'>");
-  echo ("<option value='1'>Ira Welcome Deck</option>");
+  echo ("<option value='1'>Lorraine Starter</option>");
+  echo ("<option value='2'>Silvie Starter</option>");
+  echo ("<option value='3'>Rai Starter</option>");
   echo ("</select></div>");
 }
 echo ("<br>");
@@ -111,12 +115,7 @@ echo ("<br>");
 echo ("<label for='format' class='SelectDeckInput'>Format: </label>");
 echo ("<select name='format' id='format'>");
 if ($canSeeQueue) {
-  echo ("<option value='blitz' " . ($defaultFormat == 2 ? " selected" : "") . ">Blitz</option>");
-  echo ("<option value='compblitz' " . ($defaultFormat == 3 ? " selected" : "") . ">Competitive Blitz</option>");
-  echo ("<option value='cc' " . ($defaultFormat == 0 ? " selected" : "") . ">Classic Constructed</option>");
-  echo ("<option value='compcc'" . ($defaultFormat == 1 ? " selected" : "") . ">Competitive CC</option>");
-  echo ("<option value='commoner'" . ($defaultFormat == 5 ? " selected" : "") . ">Commoner</option>");
-  echo ("<option value='clash'" . ($defaultFormat == 6 ? " selected" : "") . ">Clash</option>");
+  echo ("<option value='cc' " . ($defaultFormat == 0 ? " selected" : "") . ">Standard Constructed</option>");
 }
 echo ("<option value='livinglegendscc'" . ($defaultFormat == 4 ? " selected" : "") . ">Open Format</option>");
 echo ("</select>");
@@ -149,7 +148,49 @@ if ($canSeeQueue) {
   <h1>News</h1>
   <div style="position: relative;">
     <div style='vertical-align:middle; text-align:center;'>
-      <h3>This is the old version of the site and is no longer supported, go to <a style='color:blue' href='https://talishar.net'>talishar.net</a></h3>
+      <h3>All cards supported except:</h3>
+        Poisoned Dagger<BR>
+        Bubble Mage<BR>
+        Galatine, Sword of Sunlight<BR>
+        Conduit of the Mad Mage<BR>
+        Assassin's Ripper<BR>
+        Spirit Blade: Ensoul<BR>
+        Arthur, Young Heir<BR>
+        Spirit Blade: Ascension<BR>
+        Nia, Mistveiled Scout<BR>
+        Freeze Stiff<BR>
+        Intrepid Highwayman<BR>
+        Flute of Taming<BR>
+        Advent of the Stormcaller<BR>
+        Intangible Geist<BR>
+        Discordia, Harp of Malice<BR>
+        Rai, Mana Weaver<BR>
+        Beseech the Winds<BR>
+        Avalon, Cursed Isle<BR>
+        Carnwennan, Shrouded Edge<BR>
+        Arcanist's Prism<BR>
+        Galahad, Court Knight<BR>
+        Harness Mana<BR>
+        Silvie, Loved by All<BR>
+        Zander, Corhazi's Chosen<BR>
+        Bestial Frenzy<BR>
+        Mist Resonance<BR>
+        Triskit, Guidance Angel<BR>
+        Varuck, Smoldering Spire<BR>
+        Tristan, Grim Stalker<BR>
+        Nimue, Cursed Touch<BR>
+        Clarent, Sword of Peace<BR>
+        Call the Pack<BR>
+        Tome of Sacred Lightning<BR>
+        Lorraine, Spirit Ruler<BR>
+        Camelot, Impenetrable<BR>
+        Endura, Scepter of Ignition<BR>
+        Merlin, Memory Thief<BR>
+        Nullifying Lantern<BR>
+        Mordred, Flawless Blade<BR>
+        Barrier Servant<BR>
+        Gaia's Blessing<BR>
+        Allen, Beast Beckoner<BR>
     </div>
   </div>
   <?php
