@@ -14,9 +14,9 @@ function CardIdFromName($cardName):string{
 function CardType($cardID)
 {
   if(!$cardID) return "";
-  if(CardTypeContains($cardID, "ATTACK")) return "AA";
-  else if(CardTypeContains($cardID, "CHAMPION")) return "C";
-  else if(CardTypeContains($cardID, "WEAPON")) return "W";
+  if(CardTypes($cardID, "ATTACK")) return "AA";
+  else if(CardTypes($cardID, "CHAMPION")) return "C";
+  else if(CardTypes($cardID, "WEAPON")) return "W";
   if($cardID == "DUMMY") return "C";
   return CardSpeed($cardID) == "1" ? "I" : "A";
 }
@@ -272,13 +272,7 @@ function DynamicCost($cardID)
 
 function PitchValue($cardID)
 {
-  if(!$cardID) return "";
-  $set = CardSet($cardID);
-  if($set != "ROG" && $set != "DUM") {
-    $number = intval(substr($cardID, 3));
-    if($number < 400) return GeneratedPitchValue($cardID);
-  }
-  if($set == "ROG") return ROGUEPitchValue($cardID);
+  return "";
 }
 
 function BlockValue($cardID)
