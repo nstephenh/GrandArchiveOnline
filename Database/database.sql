@@ -147,7 +147,7 @@ VALUES (
     1,
     'Commotion #1',
     'Wins: {0}',
-    './concat/WTR175.webp'
+    './cardsquares/WTR175.webp'
   );
 --
 -- Indexes for dumped tables

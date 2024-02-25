@@ -128,7 +128,7 @@ $isMobile = IsMobile();
 
     $otherHero = "CardBack";
     echo ("<div>");
-    echo (Card($otherHero, "concat", ($isMobile ? 100 : 250), 0, 0));
+    echo (Card($otherHero, "cardsquares", ($isMobile ? 100 : 250), 0, 0));
     echo ("</div>");
     ?>
     </div>
@@ -151,7 +151,7 @@ $isMobile = IsMobile();
     echo ("<center>");
     echo ("<div style='position:relative; display: inline-block;'>");
     $overlayURL = ($contentCreator != null ? $contentCreator->HeroOverlayURL($material[0]) : "");
-    echo (Card($material[0], "concat", ($isMobile ? 100 : 250), 0, 1));
+    echo (Card($material[0], "cardsquares", ($isMobile ? 100 : 250), 0, 1));
     if ($overlayURL != "") echo ("<img title='Portrait' style='position:absolute; z-index:1001; top: 27px; left: 0px; cursor:pointer; height:" . ($isMobile ? 100 : 250) . "; width:" . ($isMobile ? 100 : 250) . ";' src='" . $overlayURL . "' />");
     echo ("</div>");
     echo ("</center>");
@@ -228,7 +228,7 @@ $isMobile = IsMobile();
           sort($material);
           for ($i = 0; $i < count($material); ++$i) {
             $id = "DECK-" . $count;
-            echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;' onclick='CardClick(\"" . $id . "\")'>" . Card($material[$i], "concat", $cardSize, 0, 1, 0, 0, 0, "", $id) . "</span>");
+            echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;' onclick='CardClick(\"" . $id . "\")'>" . Card($material[$i], "cardsquares", $cardSize, 0, 1, 0, 0, 0, "", $id) . "</span>");
 
             ++$count;
           }
@@ -257,12 +257,12 @@ $isMobile = IsMobile();
         sort($deck);
         for ($i = 0; $i < count($deck); ++$i) {
           $id = "DECK-" . $count;
-          echo (Card($deck[$i], "concat", $cardSize, 0, 1, 0, 0, 0, "", $id));
+          echo (Card($deck[$i], "cardsquares", $cardSize, 0, 1, 0, 0, 0, "", $id));
           ++$count;
         }
         for ($i = 0; $i < count($deckSB); ++$i) {
           $id = "DECK-" . $count;
-          echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;' onclick='CardClick(\"" . $id . "\")'>" . Card($deckSB[$i], "concat", $cardSize, 0, 1, 1, 0, 0, "", $id) . "</span>");
+          echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;' onclick='CardClick(\"" . $id . "\")'>" . Card($deckSB[$i], "cardsquares", $cardSize, 0, 1, 1, 0, 0, "", $id) . "</span>");
           ++$count;
         }
       }
@@ -485,14 +485,14 @@ $isMobile = IsMobile();
     if ($equip != "") {
       $id = $name . "-" . $count;
       echo ("<div style='display:inline; width:" . $cardSize . ";' onclick='CardClick(\"" . $id . "\")'>");
-      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($equip, "concat", $cardSize, 0, 1, 0, 0, 0, "", $id) . "</span>");
+      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($equip, "cardsquares", $cardSize, 0, 1, 0, 0, 0, "", $id) . "</span>");
       echo ("</div>");
       ++$count;
     }
     for ($i = 0; $i < count($equipSB); ++$i) {
       $id = $name . "-" . $count;
       echo ("<div style='display:inline; width:" . $cardSize . ";' onclick='CardClick(\"" . $id . "\")'>");
-      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($equipSB[$i], "concat", $cardSize, 0, 1, 1, 0, 0, "", $id) . "</span>");
+      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($equipSB[$i], "cardsquares", $cardSize, 0, 1, 1, 0, 0, "", $id) . "</span>");
       echo ("</div>");
       ++$count;
     }
@@ -508,7 +508,7 @@ $isMobile = IsMobile();
     if ($weapon1 != "") {
       $id = $name . "-" . $count;
       echo ("<div style='display:inline; width:" . $cardSize . ";' onclick='CardClick(\"" . $id . "\")'>");
-      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($weapon1, "concat", $cardSize, 0, 1, 0, 0, 0, "", $id) . "</span>");
+      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($weapon1, "cardsquares", $cardSize, 0, 1, 0, 0, 0, "", $id) . "</span>");
       echo ("</div>");
       ++$count;
     }
@@ -518,7 +518,7 @@ $isMobile = IsMobile();
       }
       $id = $name . "-" . $count;
       echo ("<div style='display:inline; width:" . $cardSize . ";' onclick='CardClick(\"" . $id . "\")'>");
-      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($weapon2, "concat", $cardSize, 0, 1, 0, 0, 0, "", $id) . "</span>");
+      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($weapon2, "cardsquares", $cardSize, 0, 1, 0, 0, 0, "", $id) . "</span>");
       echo ("</div>");
       ++$count;
     }
@@ -530,7 +530,7 @@ $isMobile = IsMobile();
       }
       $id = $name . "-" . $count;
       echo ("<div style='display:inline; width:" . $cardSize . ";' onclick='CardClick(\"" . $id . "\")'>");
-      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($weaponSB[$i], "concat", $cardSize, 0, 1, 1, 0, 0, "", $id) . "</span>");
+      echo ("<span style='cursor:pointer; padding-bottom:5px; padding-left:3px;'>" . Card($weaponSB[$i], "cardsquares", $cardSize, 0, 1, 1, 0, 0, "", $id) . "</span>");
       echo ("</div>");
       ++$count;
     }

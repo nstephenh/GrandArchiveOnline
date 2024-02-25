@@ -116,7 +116,7 @@ function ChainLinkPopup($link)
     if ($chainLinks[$link][$i + 1] == $defPlayer) $blockValue = BlockValue($chainLinks[$link][$i]) + $chainLinks[$link][$i + 5];
     else $blockValue = 0;
 
-    $rv .= Card($chainLinks[$link][$i], "concat", $cardSize, 0, 1, 0, ($chainLinks[$link][$i + 1] == $playerID ? 1 : 2), 0, "", "", false, 0, $blockValue, $attackValue);
+    $rv .= Card($chainLinks[$link][$i], "cardsquares", $cardSize, 0, 1, 0, ($chainLinks[$link][$i + 1] == $playerID ? 1 : 2), 0, "", "", false, 0, $blockValue, $attackValue);
     //$rv .= $chainLinks[$link][$i] . " ";
 
   }

@@ -29,13 +29,13 @@ function CheckImage($cardID)
       imagedestroy($image);
     }
   }
-  $concatFilename = "./concat/" . $cardID . ".webp";
+  $concatFilename = "./cardsquares/" . $cardID . ".webp";
   if(!file_exists($concatFilename))
   {
     echo("Concat image for " . $cardID . " does not exist. Converting: $filename<BR>");
     if(file_exists($filename))
     {
-      echo("Attempting to convert image for " . $cardID . " to concat.<BR>");
+      echo("Attempting to convert image for " . $cardID . " to cardsquares.<BR>");
       $image = imagecreatefromwebp($filename);
       $imageTop = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => 450, 'height' => 372]);
       $imageBottom = imagecrop($image, ['x' => 0, 'y' => 570, 'width' => 450, 'height' => 628]);
@@ -50,7 +50,7 @@ function CheckImage($cardID)
       imagedestroy($dest);
       imagedestroy($imageTop);
       imagedestroy($imageBottom);
-      if(file_exists($concatFilename)) echo("Image for " . $cardID . " successfully converted to concat.<BR>");
+      if(file_exists($concatFilename)) echo("Image for " . $cardID . " successfully converted to cardsquares.<BR>");
     }
   }
   $cropFilename = "./crops/" . $cardID . "_cropped.png";

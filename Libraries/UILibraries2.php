@@ -155,11 +155,11 @@ function Card($cardNumber, $folder, $maxHeight, $action = 0, $showHover = 0, $ov
   $folderPath = $folder;
   if ($cardNumber == "ENDSTEP" || $cardNumber == "ENDTURN" || $cardNumber == "RESUMETURN" || $cardNumber == "PHANTASM" || $cardNumber == "FINALIZECHAINLINK" || $cardNumber == "DEFENDSTEP" || $cardNumber == "AIM_cropped") {
     $folderPath = str_replace("CardImages", "Images", $folderPath);
-    $folderPath = str_replace("concat", "Images", $folderPath);
+    $folderPath = str_replace("cardsquares", "Images", $folderPath);
     $showHover = 0;
     $borderColor = 0;
-  } else if ($folder == "concat" && $LanguageJP) { // Japanese
-    $folderPath = "concat/JP";
+  } else if ($folder == "cardsquares" && $LanguageJP) { // Japanese
+    $folderPath = "cardsquares/JP";
     $fileExt = ".webp";
   } else if ($folder == "WebpImages" && $LanguageJP) { // Japanese
     $folderPath = "WebpImages/JP";
@@ -167,7 +167,7 @@ function Card($cardNumber, $folder, $maxHeight, $action = 0, $showHover = 0, $ov
   } else if (mb_strpos($folder, "CardImages") !== false) {
     $folderPath = str_replace("CardImages", "WebpImages", $folder);
     $fileExt = ".webp";
-  } else if ($folder == "concat" || $folder == "./concat" || $folder == "../concat") {
+  } else if ($folder == "cardsquares" || $folder == "./cardsquares" || $folder == "../cardsquares") {
     //if (DelimStringContains(CardSubType($cardNumber), "Landmark")) $rotate = true;
     $fileExt = ".webp";
   }
@@ -185,7 +185,7 @@ function Card($cardNumber, $folder, $maxHeight, $action = 0, $showHover = 0, $ov
   }
   if ($borderColor > 0) {
     $border = "border-radius:10px; border:2.5px solid " . BorderColorMap($borderColor) . ";";
-  } else if ($folder == "concat" || $folder == "./concat" || $folder == "../concat") {
+  } else if ($folder == "cardsquares" || $folder == "./cardsquares" || $folder == "../cardsquares") {
     $border = "border-radius:8px; border:1.5px solid transparent;";
   } else {
     $border = "border: 1px solid transparent;";
@@ -194,7 +194,7 @@ function Card($cardNumber, $folder, $maxHeight, $action = 0, $showHover = 0, $ov
   if ($folder == "crops") {
     $height = $maxHeight;
     $width = ($height * 1.29);
-  } else if ($folder == "concat" || $folder == "./concat" || $folder == "../concat") {
+  } else if ($folder == "cardsquares" || $folder == "./cardsquares" || $folder == "../cardsquares") {
     $height = $maxHeight;
     $width = $maxHeight;
   } else if ($rotate == false) {
@@ -492,7 +492,7 @@ function CreatePopup($id, $fromArr, $canClose, $defaultState = 0, $title = "", $
   if ($canClose == 1) $rv .= "<div style='position:absolute; top:0px; right:45px;'><div title='Click to close' style='position: fixed; cursor:pointer; font-size:50px;' onclick='(function(){ document.getElementById(\"" . $id . "\").style.display = \"none\";})();'>&#10006;</div></div>";
   if ($additionalComments != "") $rv .= "<h" . ($big ? "3" : "4") . " style='margin-left: 10px; margin-top: 5px; margin-bottom: 10px; text-align: center;'>" . $additionalComments . "</h" . ($big ? "3" : "4") . ">";
   for ($i = 0; $i < count($fromArr); $i += $arrElements) {
-    $rv .= Card($fromArr[$i], $path . "concat", $cardSize, 0, 1);
+    $rv .= Card($fromArr[$i], $path . "cardsquares", $cardSize, 0, 1);
   }
   if (IsGameOver()) $style = "text-align: center;";
   else $style = "font-size: 18px; margin-left: 10px; line-height: 22px; align-items: center;";
@@ -675,15 +675,15 @@ function BanishUI($from = "")
     $action = $currentPlayer == $playerID && IsPlayable($banish[$i], $turn[0], "BANISH", $i) ? 14 : 0;
     $mod = explode("-", $banish[$i + 1])[0];
     $border = CardBorderColor($banish[$i], "BANISH", $action > 0, $mod);
-    if ($mod == "INT") $rv .= Card($banish[$i], "concat", $size, 0, 1, 1); //Display intimidated cards grayed out and unplayable
+    if ($mod == "INT") $rv .= Card($banish[$i], "cardsquares", $size, 0, 1, 1); //Display intimidated cards grayed out and unplayable
     else if ($mod == "TCL" || $mod == "TT" || $mod == "TCC" || $mod == "NT" || $mod == "INST" || $mod == "MON212" || $mod == "ARC119")
-      $rv .= Card($banish[$i], "concat", $size, $action, 1, 0, $border, 0, strval($i)); //Display banished cards that are playable
+      $rv .= Card($banish[$i], "cardsquares", $size, $action, 1, 0, $border, 0, strval($i)); //Display banished cards that are playable
     else // if($from != "HAND")
     {
       if (PlayableFromBanish($banish[$i], $banish[$i+1]) || AbilityPlayableFromBanish($banish[$i]))
-        $rv .= Card($banish[$i], "concat", $size, $action, 1, 0, $border, 0, strval($i));
+        $rv .= Card($banish[$i], "cardsquares", $size, $action, 1, 0, $border, 0, strval($i));
       else if ($from != "HAND")
-        $rv .= Card($banish[$i], "concat", $size, 0, 1, 0, $border);
+        $rv .= Card($banish[$i], "cardsquares", $size, 0, 1, 0, $border);
     }
   }
   return $rv;
@@ -711,7 +711,7 @@ function BanishUIMinimal($from = "")
       }
       else if ($from != "HAND")
       {
-        $rv .= Card($banish[$i], "concat", $size, 0, 1, 0, $border);
+        $rv .= Card($banish[$i], "cardsquares", $size, 0, 1, 0, $border);
       }
     }
   }
@@ -735,7 +735,7 @@ function TheirBanishUIMinimal($from = "")
         if ($rv != "") $rv .= "|";
         $rv .= ClientRenderedCard(cardNumber: $banish[$i], controller: $otherPlayer);
       } else if ($from != "HAND")
-        $rv .= Card($banish[$i], "concat", $size, 0, 1, 0);
+        $rv .= Card($banish[$i], "cardsquares", $size, 0, 1, 0);
     }
   }
   return $rv;

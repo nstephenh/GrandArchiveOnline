@@ -408,7 +408,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       $actionDisabled = 0;
       $aimCounters = 0;
       if($i == 0 && HasAimCounter()) $aimCounters = 1;
-      echo (Card($combatChain[$i], "concat", $cardSize, $action, 1, $actionDisabled, $combatChain[$i + 1] == $playerID ? 1 : 2, 0, strval($i), atkCounters: $aimCounters, controller: $combatChain[$i + 1]));
+      echo (Card($combatChain[$i], "cardsquares", $cardSize, $action, 1, $actionDisabled, $combatChain[$i + 1] == $playerID ? 1 : 2, 0, strval($i), atkCounters: $aimCounters, controller: $combatChain[$i + 1]));
     }
   }
 
@@ -436,10 +436,10 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
           $tilesName = ($layers[$j] == "LAYER" || $layers[$j] == "TRIGGER" ? $layers[$j + 2] : $layers[$j]);
           if ($tilesName == $layerName) ++$nbTiles;
         }
-        $content .= Card($layerName, "concat", $cardSize, 0, 1, 0, $layersColor, ($nbTiles == 1 ? 0 : $nbTiles), controller: $layers[$i + 1]);
+        $content .= Card($layerName, "cardsquares", $cardSize, 0, 1, 0, $layersColor, ($nbTiles == 1 ? 0 : $nbTiles), controller: $layers[$i + 1]);
       } elseif (!IsTileable($layerName)) {
         $nbTiles = 0;
-        $content .= Card($layerName, "concat", $cardSize, 0, 1, 0, $layersColor, controller: $layers[$i + 1]);
+        $content .= Card($layerName, "cardsquares", $cardSize, 0, 1, 0, $layersColor, controller: $layers[$i + 1]);
       }
       if($layers[$i] == "TRIGGER" && $dqState[8] >= $i && $playerID == $mainPlayer)
       {
@@ -520,7 +520,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     for ($i = 0; $i < count($options); ++$i) {
       $content .= "<td>";
       $content .= "<table><tr><td>";
-      $content .= Card($options[$i], "concat", $cardSize, 0, 1);
+      $content .= Card($options[$i], "cardsquares", $cardSize, 0, 1);
       $content .= "</td></tr><tr><td>";
       if ($turn[0] == "CHOOSETOP" || $turn[0] == "OPT") $content .= CreateButton($playerID, "Top", 8, $options[$i], "20px");
       if ($turn[0] == "CHOOSEBOTTOM" || $turn[0] == "OPT") $content .= CreateButton($playerID, "Bottom", 9, $options[$i], "20px");
@@ -540,7 +540,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     for ($i = 0; $i < count($options); ++$i) {
       $content .= "<td>";
       $content .= "<table><tr><td>";
-      $content .= Card($options[$i], "concat", $cardSize, 0, 1);
+      $content .= Card($options[$i], "cardsquares", $cardSize, 0, 1);
       $content .= "</td></tr><tr><td>";
       if ($turn[0] == "CHOOSETOPOPPONENT") $content .= CreateButton($otherPlayer, "Top", 29, $options[$i], "20px");
       $content .= "</td></tr>";
@@ -555,7 +555,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     $content = "<table><tr>";
     for ($i = 0; $i < count($myHand); ++$i) {
       $content .= "<td>";
-      $content .= Card($myHand[$i], "concat", $cardSize, 0, 1);
+      $content .= Card($myHand[$i], "cardsquares", $cardSize, 0, 1);
       $content .= "</td>";
     }
     $content .= "</tr><tr>";
@@ -672,7 +672,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       } elseif ($option[0] == "MYAURAS") {
         $atkCounters = $myAuras[$index + 3];
       }
-      $content .= Card($card, "concat", $cardSize, 16, 1, 0, $playerBorderColor, $counters, $options[$i], "", false, $lifeCounters, $enduranceCounters, $atkCounters, controller: $playerBorderColor);
+      $content .= Card($card, "cardsquares", $cardSize, 16, 1, 0, $playerBorderColor, $counters, $options[$i], "", false, $lifeCounters, $enduranceCounters, $atkCounters, controller: $playerBorderColor);
     }
     $content .= "</div>";
     echo CreatePopup("CHOOSEMULTIZONE", [], 0, 1, GetPhaseHelptext(), 1, $content);
@@ -728,7 +728,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
   if ($turn[0] == "PDECK" && $currentPlayer == $playerID) {
     $content = "";
     for ($i = 0; $i < count($myPitch); $i += 1) {
-      $content .= Card($myPitch[$i], "concat", $cardSize, 6, 1);
+      $content .= Card($myPitch[$i], "cardsquares", $cardSize, 6, 1);
     }
     echo CreatePopup("PITCH", [], 0, 1, "Choose a card from your Pitch Zone to add to the bottom of your deck", 1, $content);
   }
@@ -751,13 +751,13 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     for ($i = 0; $i < count($options); ++$i) {
       $content .= "<td>";
       $content .= "<div class='container'>";
-      if ($turn[0] == "MULTICHOOSEDISCARD") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myDiscard[$options[$i]], "concat", $cardSize, 0, 1) . "</label>";
-      else if ($turn[0] == "MULTICHOOSETHEIRDISCARD") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($theirDiscard[$options[$i]], "concat", $cardSize, 0, 1) . "</label>";
-      else if ($turn[0] == "MULTICHOOSEHAND" || $turn[0] == "MAYMULTICHOOSEHAND") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myHand[$options[$i]], "concat", $cardSize, 0, 1) . "</label>";
-      else if ($turn[0] == "MULTICHOOSEMATERIAL") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myMaterial[$options[$i]], "concat", $cardSize, 0, 1) . "</label>";
-      else if ($turn[0] == "MULTICHOOSEDECK") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myDeck[$options[$i]], "concat", $cardSize, 0, 1) . "</label>";
-      else if ($turn[0] == "MULTICHOOSETHEIRDECK") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($theirDeck[$options[$i]], "concat", $cardSize, 0, 1) . "</label>";
-      else if ($turn[0] == "MAYMULTICHOOSEAURAS") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myAuras[$options[$i]], "concat", $cardSize, 0, 1) . "</label>";
+      if ($turn[0] == "MULTICHOOSEDISCARD") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myDiscard[$options[$i]], "cardsquares", $cardSize, 0, 1) . "</label>";
+      else if ($turn[0] == "MULTICHOOSETHEIRDISCARD") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($theirDiscard[$options[$i]], "cardsquares", $cardSize, 0, 1) . "</label>";
+      else if ($turn[0] == "MULTICHOOSEHAND" || $turn[0] == "MAYMULTICHOOSEHAND") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myHand[$options[$i]], "cardsquares", $cardSize, 0, 1) . "</label>";
+      else if ($turn[0] == "MULTICHOOSEMATERIAL") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myMaterial[$options[$i]], "cardsquares", $cardSize, 0, 1) . "</label>";
+      else if ($turn[0] == "MULTICHOOSEDECK") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myDeck[$options[$i]], "cardsquares", $cardSize, 0, 1) . "</label>";
+      else if ($turn[0] == "MULTICHOOSETHEIRDECK") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($theirDeck[$options[$i]], "cardsquares", $cardSize, 0, 1) . "</label>";
+      else if ($turn[0] == "MAYMULTICHOOSEAURAS") $content .= "<label class='multichoose' for=chk" . $i . ">" . Card($myAuras[$options[$i]], "cardsquares", $cardSize, 0, 1) . "</label>";
       else if ($turn[0] == "MULTICHOOSETEXT" || $turn[0] == "MAYMULTICHOOSETEXT") $content .= implode(" ", explode("_", strval($options[$i])));
       $content .= "<div class='overlay'><div class='text'>Select</div></div></div>";
       $content .= "</td>";
@@ -795,7 +795,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
   //Display Their Discard
   if (count($theirDiscard) > 0) {
     echo ("<div title='Click to view the cards in your opponent's Graveyard.' style='cursor:pointer; position:fixed; right:" . GetZoneRight("DISCARD") . "; top:" . GetZoneTop("THEIRDISCARD") . ";' onclick='ShowPopup(\"theirDiscardPopup\");'>");
-    echo (Card($theirDiscard[count($theirDiscard) - 1], "concat", $cardSizeAura, 0, 0, 0, 0, count($theirDiscard), controller: $otherPlayer));
+    echo (Card($theirDiscard[count($theirDiscard) - 1], "cardsquares", $cardSizeAura, 0, 0, 0, 0, count($theirDiscard), controller: $otherPlayer));
   } else {
     //Empty Discard div
     echo ("<div style='position:fixed; right:" . GetZoneRight("DISCARD") . "; top:" . GetZoneTop("THEIRDISCARD") . "; border-radius:5%; padding:" . $cardSizeAura / 2 . "px; background-color: rgba(0, 0, 0, 0.4);'>");
@@ -806,7 +806,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
   //Display Their Deck
   if (count($theirDeck) > 0) {
     echo ("<div style='position:fixed; right:" . GetZoneRight("DECK") . "; top:" . GetZoneTop("THEIRDECK") . ";'>");
-    echo (Card($TheirCardBack, "concat", $cardSizeAura, 0, 0, 0, 0, count($theirDeck)));
+    echo (Card($TheirCardBack, "cardsquares", $cardSizeAura, 0, 0, 0, 0, count($theirDeck)));
   } else {
     //Empty Deck div
     echo ("<div style='position:fixed; right:" . GetZoneRight("DECK") . "; top:" . GetZoneTop("THEIRDECK") . "; border-radius:5%; padding:" . $cardSizeAura / 2 . "px; background-color: rgba(0, 0, 0, 0.4);'>");
@@ -820,7 +820,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     echo ("<div style='position:fixed; right:" . GetZoneRight("BANISH") . "; top:" . GetZoneTop("THEIRBANISH") . ";'>");
     $mod = $theirBanish[count($theirBanish) - BanishPieces() + 1];
     $card = $mod == "INT" || $mod == "UZURI" ? $TheirCardBack : $theirBanish[count($theirBanish) - BanishPieces()];
-    echo (Card($card, "concat", $cardSizeAura, 0, 0, 0, 0, controller: $otherPlayer));
+    echo (Card($card, "cardsquares", $cardSizeAura, 0, 0, 0, 0, controller: $otherPlayer));
 
     $theirBloodDeptCount = 0;
     for ($i = 0; $i < count($theirBanish); $i += BanishPieces()) {
@@ -851,7 +851,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       $action = ($playable && $currentPlayer == $playerID ? 25 : 0);
       $border = CardBorderColor($landmarks[$i], "PLAY", $playable);
       $counters = 0;
-      echo (Card($landmarks[$i], "concat", $cardSizeAura, $action, 1, 0, $border, $counters, strval($i), ""));
+      echo (Card($landmarks[$i], "cardsquares", $cardSizeAura, $action, 1, 0, $border, $counters, strval($i), ""));
     }
     echo ("</div>");
   }
@@ -867,7 +867,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       $counters = $theirAuras[$i + 2];
       $atkCounters = $theirAuras[$i + 3];
       echo ("<div style='position:relative; display: inline-block;'>");
-      echo (Card($theirAuras[$i], "concat", $cardSizeAura, 0, 1, $theirAuras[$i + 1] != 2 ? 1 : 0, 0, $counters, "", "", False, 0, 0, $atkCounters, controller: $otherPlayer) . "&nbsp");
+      echo (Card($theirAuras[$i], "cardsquares", $cardSizeAura, 0, 1, $theirAuras[$i + 1] != 2 ? 1 : 0, 0, $counters, "", "", False, 0, 0, $atkCounters, controller: $otherPlayer) . "&nbsp");
       DisplayPriorityGem($theirAuras[$i + 8], "AURAS-" . $i, 1);
       if ($theirAuras[$i + 4] == 1 && CardType($theirAuras[$i]) != "T") echo ("<img title='Token Copy' style='position:absolute; display: inline-block; z-index:1001; top: 0px; left:" . $cardWidth / 2 - 45 . "px; width:" . $cardWidth + 15 . "px; height:30px; cursor:pointer;' src='./Images/tokenCopy.png' />");
       echo ("</div>");
@@ -877,7 +877,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     for ($i = 0; $i+ItemPieces()-1 < count($theirItems); $i += ItemPieces()) {
       if (IsTileable($theirItems[$i])) continue;
       echo ("<div style='position:relative; display: inline-block;'>");
-      echo (Card($theirItems[$i], "concat", $cardSizeAura, 0, 1, $theirItems[$i + 2] != 2 ? 1 : 0, 0, $theirItems[$i + 1], "", "", false, 0, 0, 0, "ITEMS", controller: $otherPlayer) . "&nbsp");
+      echo (Card($theirItems[$i], "cardsquares", $cardSizeAura, 0, 1, $theirItems[$i + 2] != 2 ? 1 : 0, 0, $theirItems[$i + 1], "", "", false, 0, 0, 0, "ITEMS", controller: $otherPlayer) . "&nbsp");
       DisplayPriorityGem($theirItems[$i + 6], "ITEMS-" . $i, 1);
       echo ("</div>");
     }
@@ -896,8 +896,8 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       if (SearchCurrentTurnEffectsForUniqueID($theirAllies[$i + 5]) != -1) $attackCounters = EffectAttackModifier(SearchUniqueIDForCurrentTurnEffects($theirAllies[$i + 5])) + AttackValue($theirAllies[$i]);
       else $attackCounters = 0;
       echo ("<div style='position:relative; display: inline-block;'>");
-      if ($subcard != "-" && $subcard != "UPR043") echo (Card($subcard, "concat", $cardSizeAura, showHover: true, from: "SUBCARD", controller: $playerID));
-      echo (Card($theirAllies[$i], "concat", $cardSizeAura, 0, 1, $theirAllies[$i + 1] != 2 ? 1 : 0, 0, 0, "", "", False, $lifeCounters, $enduranceCounters, $attackCounters, ($subcard != "-" && $subcard != "UPR043") ? "HASSUBCARD" : "", controller: $otherPlayer) . "&nbsp");
+      if ($subcard != "-" && $subcard != "UPR043") echo (Card($subcard, "cardsquares", $cardSizeAura, showHover: true, from: "SUBCARD", controller: $playerID));
+      echo (Card($theirAllies[$i], "cardsquares", $cardSizeAura, 0, 1, $theirAllies[$i + 1] != 2 ? 1 : 0, 0, 0, "", "", False, $lifeCounters, $enduranceCounters, $attackCounters, ($subcard != "-" && $subcard != "UPR043") ? "HASSUBCARD" : "", controller: $otherPlayer) . "&nbsp");
       if ($theirAllies[$i + 3] == 1) echo ("<img title='Frozen' style='position:absolute; z-index:1001; top: " . ($subcard == "-" || $subcard == "UPR043" ? "6px" : "24px") . "; left: 7px; cursor:pointer; height:" . $cardHeight . "; width:" . $cardWidth . ";' src='./Images/frozenOverlay.png' />");
       echo ("</div>");
     }
@@ -908,7 +908,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       if (IsTileable($theirPermanents[$i])) continue;
       //$playable = ($currentPlayer == $playerID ? IsPlayable($theirPermanents[$i], $turn[0], "PLAY", $i, $restriction) : false);
       //$border = CardBorderColor($theirPermanents[$i], "PLAY", $playable);
-      echo (Card($theirPermanents[$i], "concat", $cardSizeAura, 0, 1, controller: $otherPlayer) . "&nbsp");
+      echo (Card($theirPermanents[$i], "cardsquares", $cardSizeAura, 0, 1, controller: $otherPlayer) . "&nbsp");
     }
   }
   echo ("</div>");
@@ -950,9 +950,9 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
 
     for ($i = 0; $i < count($theirArsenal); $i += ArsenalPieces()) {
       echo ("<div style='position:relative; display:inline;'>");
-      if ($playerID == 3 && IsCasterMode()) echo (Card($theirArsenal[$i], "concat", $cardSizeAura, 0, 1, $theirArsenal[$i + 2] == 0 ? 1 : 0, 0, $theirArsenal[$i + 3], from: "ARS", controller: $otherPlayer));
-      else if ($theirArsenal[$i + 1] == "UP") echo (Card($theirArsenal[$i], "concat", $cardSizeAura, 0, 1, $theirArsenal[$i + 2] == 0 ? 1 : 0, 0, $theirArsenal[$i + 3], from: "ARS", controller: $otherPlayer));
-      else echo (Card($TheirCardBack, "concat", $cardSizeAura, 0, 0));
+      if ($playerID == 3 && IsCasterMode()) echo (Card($theirArsenal[$i], "cardsquares", $cardSizeAura, 0, 1, $theirArsenal[$i + 2] == 0 ? 1 : 0, 0, $theirArsenal[$i + 3], from: "ARS", controller: $otherPlayer));
+      else if ($theirArsenal[$i + 1] == "UP") echo (Card($theirArsenal[$i], "cardsquares", $cardSizeAura, 0, 1, $theirArsenal[$i + 2] == 0 ? 1 : 0, 0, $theirArsenal[$i + 3], from: "ARS", controller: $otherPlayer));
+      else echo (Card($TheirCardBack, "cardsquares", $cardSizeAura, 0, 0));
       if ($theirArsenal[$i + 4] == 1) echo ("<img title='Frozen' style='position:absolute; z-index:10; border-radius:5px; top:-80px; left:7px; height:" . $cardHeight . "; width:" . $cardWidth . ";' src='./Images/frozenOverlay.png' />");
       echo ("</div>");
     }
@@ -1006,7 +1006,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       $counters = $myAuras[$i + 2];
       $atkCounters = $myAuras[$i + 3];
       echo ("<div style='position:relative; display: inline-block;'>");
-      echo (Card($myAuras[$i], "concat", $cardSizeAura, $currentPlayer == $playerID && $turn[0] != "P" && $playable ? 22 : 0, 1, $myAuras[$i + 1] != 2 ? 1 : 0, $border, $counters, strval($i), "", False, 0, 0, $atkCounters, controller: $playerID) . "&nbsp");
+      echo (Card($myAuras[$i], "cardsquares", $cardSizeAura, $currentPlayer == $playerID && $turn[0] != "P" && $playable ? 22 : 0, 1, $myAuras[$i + 1] != 2 ? 1 : 0, $border, $counters, strval($i), "", False, 0, 0, $atkCounters, controller: $playerID) . "&nbsp");
       DisplayPriorityGem($myAuras[$i + 7], "AURAS-" . $i);
       if ($myAuras[$i + 4] == 1 && CardType($myAuras[$i]) != "T") echo ("<img title='Token Copy' style='position:absolute; display: inline-block; z-index:1001; top: 0px; left:" . $cardWidth / 2 - 45 . "px; width:" . $cardWidth + 15 . "px; height:30px; cursor:pointer;' src='./Images/tokenCopy.png' />");
       echo ("</div>");
@@ -1018,7 +1018,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       $playable = ($currentPlayer == $playerID ? IsPlayable($myItems[$i], $turn[0], "PLAY", $i, $restriction) : false);
       $border = CardBorderColor($myItems[$i], "PLAY", $playable);
       echo ("<div style='position:relative; display: inline-block;'>");
-      echo (Card($myItems[$i], "concat", $cardSizeAura, $currentPlayer == $playerID && $turn[0] != "P" && $playable ? 10 : 0, 1, ItemOverlay($myItems[$i], $myItems[$i + 2], $myItems[$i + 3]), $border, $myItems[$i + 1], strval($i), "", false, 0, 0, 0, "ITEMS", controller: $playerID) . "&nbsp");
+      echo (Card($myItems[$i], "cardsquares", $cardSizeAura, $currentPlayer == $playerID && $turn[0] != "P" && $playable ? 10 : 0, 1, ItemOverlay($myItems[$i], $myItems[$i + 2], $myItems[$i + 3]), $border, $myItems[$i + 1], strval($i), "", false, 0, 0, 0, "ITEMS", controller: $playerID) . "&nbsp");
       DisplayPriorityGem($myItems[$i + 5], "ITEMS-" . $i);
       echo ("</div>");
     }
@@ -1035,8 +1035,8 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       $playable = IsPlayable($myAllies[$i], $turn[0], "PLAY", $i, $restriction) && $myAllies[$i + 1] == 2;
       $border = CardBorderColor($myAllies[$i], "PLAY", $playable);
       echo ("<div style='position:relative; display: inline-block;'>");
-      if ($subcard != "-" && $subcard != "UPR043") echo (Card($subcard, "concat", $cardSizeAura, showHover: true, from: "SUBCARD", controller: $playerID));
-      echo (Card($myAllies[$i], "concat", $cardSizeAura, $currentPlayer == $playerID && $turn[0] != "P" && $playable ? 24 : 0, 1, $myAllies[$i + 1] != 2 ? 1 : 0, $border, 0, strval($i), "", False, $lifeCounters, $enduranceCounters, $attackCounters, ($subcard != "-" && $subcard != "UPR043") ? "HASSUBCARD" : "", controller: $playerID) . "&nbsp");
+      if ($subcard != "-" && $subcard != "UPR043") echo (Card($subcard, "cardsquares", $cardSizeAura, showHover: true, from: "SUBCARD", controller: $playerID));
+      echo (Card($myAllies[$i], "cardsquares", $cardSizeAura, $currentPlayer == $playerID && $turn[0] != "P" && $playable ? 24 : 0, 1, $myAllies[$i + 1] != 2 ? 1 : 0, $border, 0, strval($i), "", False, $lifeCounters, $enduranceCounters, $attackCounters, ($subcard != "-" && $subcard != "UPR043") ? "HASSUBCARD" : "", controller: $playerID) . "&nbsp");
       if ($myAllies[$i + 3] == 1) echo ("<img title='Frozen' style='position:absolute; z-index:1001; top: " . ($subcard == "-" || $subcard == "UPR043" ? "6px" : "24px") . "; left: 6px; cursor:pointer; height:" . $cardHeight . "; width:" . $cardWidth . ";' src='./Images/frozenOverlay.png' />");
       echo ("</div>");
     }
@@ -1047,7 +1047,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       if (IsTileable($myPermanents[$i])) continue;
       //$playable = ($currentPlayer == $playerID ? IsPlayable($myPermanents[$i], $turn[0], "PLAY", $i, $restriction) : false);
       //$border = CardBorderColor($myPermanents[$i], "PLAY", $playable);
-      echo (Card($myPermanents[$i], "concat", $cardSizeAura, 0, 1, controller: $playerID) . "&nbsp");
+      echo (Card($myPermanents[$i], "cardsquares", $cardSizeAura, 0, 1, controller: $playerID) . "&nbsp");
     }
   }
   echo ("</div>");
@@ -1097,14 +1097,14 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     for ($i = 0; $i < count($myArsenal); $i += ArsenalPieces()) {
       echo ("<div style='position:relative; display:inline-block'>");
       if ($playerID == 3) {
-        if ($myArsenal[$i + 1] == "UP" || IsCasterMode()) echo (Card($myArsenal[$i], "concat", $cardSizeAura, 0, 1, $myArsenal[$i + 2] == 0 ? 1 : 0, 0, $myArsenal[$i + 3]));
-        else echo (Card($MyCardBack, "concat", $cardSizeAura, 0, 0, 0, 0));
+        if ($myArsenal[$i + 1] == "UP" || IsCasterMode()) echo (Card($myArsenal[$i], "cardsquares", $cardSizeAura, 0, 1, $myArsenal[$i + 2] == 0 ? 1 : 0, 0, $myArsenal[$i + 3]));
+        else echo (Card($MyCardBack, "cardsquares", $cardSizeAura, 0, 0, 0, 0));
       } else {
         $playable = $playerID == $currentPlayer && $turn[0] != "P" && IsPlayable($myArsenal[$i], $turn[0], "ARS", $i, $restriction);
         $border = CardBorderColor($myArsenal[$i], "ARS", $playable);
         $counters = $myArsenal[$i + 3];
         echo ("<div style='position:relative; margin:1px;>");
-        echo (Card($myArsenal[$i], "concat", $cardSizeAura, $currentPlayer == $playerID && $playable ? 5 : 0, 1, $myArsenal[$i + 2] > 0 ? 0 : 1, $border, $counters, strval($i), from: "ARS", controller: $playerID));
+        echo (Card($myArsenal[$i], "cardsquares", $cardSizeAura, $currentPlayer == $playerID && $playable ? 5 : 0, 1, $myArsenal[$i + 2] > 0 ? 0 : 1, $border, $counters, strval($i), from: "ARS", controller: $playerID));
         $iconHeight = $cardSize / 4;
         $iconLeft = $cardWidth / 2 - intval($iconHeight * .71 / 2) + 5;
         if ($myArsenal[$i + 1] == "UP") echo ("<img style='position:absolute; z-index: 5; left:" . $iconLeft . "px; bottom:3px; height:" . $iconHeight . "px; ' src='./Images/faceUp.png' title='This arsenal card is face up.'></img>");
@@ -1126,7 +1126,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
   //Display My Discard
   if (count($myDiscard) > 0) {
     echo ("<div title='Click to view the cards in your Graveyard.' style='cursor:pointer; position:fixed; right:" . GetZoneRight("DISCARD") . "; bottom:" . GetZoneBottom("MYDISCARD") . ";' onclick='ShowPopup(\"myDiscardPopup\");'>");
-    echo (Card($myDiscard[count($myDiscard) - 1], "concat", $cardSizeAura, 0, 0, 0, 0, count($myDiscard), controller: $playerID));
+    echo (Card($myDiscard[count($myDiscard) - 1], "cardsquares", $cardSizeAura, 0, 0, 0, 0, count($myDiscard), controller: $playerID));
   } else {
     //Empty Discard div
     echo ("<div style='position:fixed; right:" . GetZoneRight("DISCARD") . "; bottom:" . GetZoneBottom("MYDISCARD") . "; border-radius:5%; padding:" . $cardSizeAura / 2 . "px; background-color: rgba(0, 0, 0, 0.4);'>");
@@ -1139,7 +1139,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     $playerDeck = new Deck($playerID);
     if ($turn[0] == "OVER") echo ("<div title='Click to view the cards in your Deck.' style='cursor:pointer; position:fixed; right:" . GetZoneRight("DECK") . "; bottom:" . GetZoneBottom("MYDECK") . "' onclick='ShowPopup(\"myDeckPopup\");'>");
     else echo ("<div style='position:fixed; right:" . GetZoneRight("DECK") . "; bottom:" . GetZoneBottom("MYDECK") . ";'>");
-    echo (Card($MyCardBack, "concat", $cardSizeAura, 0, 0, 0, 0, $playerDeck->RemainingCards()));
+    echo (Card($MyCardBack, "cardsquares", $cardSizeAura, 0, 0, 0, 0, $playerDeck->RemainingCards()));
   } else {
     //Empty Deck div
     echo ("<div style='position:fixed; right:" . GetZoneRight("DECK") . "; bottom:" . GetZoneBottom("MYDECK") . "; border-radius:5%; padding:" . $cardSizeAura / 2 . "px; background-color: rgba(0, 0, 0, 0.4);'>");
@@ -1154,7 +1154,7 @@ if ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
     $mod = $myBanish[count($myBanish) - BanishPieces() + 1];
     if ($playerID == 3) $card = ($mod == "INT" || $mod == "UZURI" ? $MyCardBack : $myBanish[count($myBanish) - BanishPieces()]);
     else $card = $myBanish[count($myBanish) - BanishPieces()];
-    echo (Card($card, "concat", $cardSizeAura, 0, 0, 0, 0, controller: $playerID));
+    echo (Card($card, "cardsquares", $cardSizeAura, 0, 0, 0, 0, controller: $playerID));
     echo ("<span title='Click to see your Banish Zone.' onclick='ShowPopup(\"myBanishPopup\");' style='left:" . $cardIconLeft . "px; top:" . $cardIconTop . "px; cursor:pointer;
       position:absolute; display:inline-block;'><img style='opacity:0.9; height:" . $cardIconSize . "; width:" . $cardIconSize . ";' src='./Images/banish.png'>
       <div style='margin: 0; top: 50%; left: 50%; margin-right: -50%; height:" . $counterHeight . "; padding: 3px;
@@ -1248,7 +1248,7 @@ function ChoosePopup($zone, $options, $mode, $caption = "", $zoneSize = 1)
   for ($i = 0; $i < count($options); ++$i) {
     $content .= "<td style='display: inline-block;'>";
     $content .= "<div class='container'>";
-    $content .= "<label class='multichoose'>" . Card($zone[$options[$i]], "concat", $cardSize, $mode, 1, 0, 0, 0, strval($options[$i])) . "</label>";
+    $content .= "<label class='multichoose'>" . Card($zone[$options[$i]], "cardsquares", $cardSize, $mode, 1, 0, 0, 0, strval($options[$i])) . "</label>";
     $content .= "<div class='overlay'><div class='text'>Select</div></div></div></td>";
   }
   $content .= "</tr></table>";
@@ -1408,7 +1408,7 @@ function DisplayTiles($player)
   if ($count > 0) {
     $border = CardBorderColor("CRU197", "PLAY", $playable);
     echo ("<div style='position:relative; display: inline-block;'>");
-    echo (Card("ENLIGHTEN", "concat", $cardSizeAura, $playable ? 22 : 0, 1, 0, $border, ($count > 1 ? $count : 0), strval($actionIndex)) . "&nbsp");
+    echo (Card("ENLIGHTEN", "cardsquares", $cardSizeAura, $playable ? 22 : 0, 1, 0, $border, ($count > 1 ? $count : 0), strval($actionIndex)) . "&nbsp");
     DisplayPriorityGem(($player == $playerID ? $auras[$first + 7] : $auras[$first + 8]), "AURAS-" . $first, ($player != $playerID ? 1 : 0));
     echo ("</div>");
   }
