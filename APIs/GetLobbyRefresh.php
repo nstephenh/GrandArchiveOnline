@@ -75,7 +75,7 @@ while ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
       SetCachePiece($gameName, $otherP + 3, "-1");
       if ($otherP == 2) SetCachePiece($gameName, $otherP + 6, "");
       $kickPlayerTwo = true;
-      include "./APIParseGamefile.php";
+      include "../MenuFiles/ParseGamefile.php";
       include "../MenuFiles/WriteGamefile.php";
       $p1SideboardSubmitted = "0";
       WriteGameFile();
@@ -83,7 +83,7 @@ while ($lastUpdate != 0 && $cacheVal <= $lastUpdate) {
   }
 }
 
-include "./APIParseGamefile.php";
+include "../MenuFiles/ParseGamefile.php";
 include "../MenuFiles/WriteGamefile.php";
 
 $targetAuth = ($playerID == 1 ? $p1Key : $p2Key);

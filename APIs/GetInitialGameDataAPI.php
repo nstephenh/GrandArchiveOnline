@@ -26,7 +26,7 @@ if (!file_exists("../Games/" . $gameName . "/GameFile.txt")) {
 }
 
 ob_start();
-include "./APIParseGamefile.php";
+include "../MenuFiles/ParseGamefile.php";
 ob_end_clean();
 
 $response->p1Name = $p1uid;

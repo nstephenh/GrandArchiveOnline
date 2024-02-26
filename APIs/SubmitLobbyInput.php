@@ -29,7 +29,7 @@ if (!IsGameNameValid($gameName)) {
 }
 
 include "../HostFiles/Redirector.php";
-include "./APIParseGamefile.php";
+include "../MenuFiles/ParseGamefile.php";
 include "../MenuFiles/WriteGamefile.php";
 
 $targetAuth = ($playerID == 1 ? $p1Key : $p2Key);

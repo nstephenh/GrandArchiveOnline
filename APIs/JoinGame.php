@@ -110,7 +110,7 @@ if ($favoriteDeckLink != "0" && $decklink == "") $decklink = $favoriteDeckLink;
 
 include "../HostFiles/Redirector.php";
 include "../CardDictionary.php";
-include "./APIParseGamefile.php";
+include "../MenuFiles/ParseGamefile.php";
 include "../MenuFiles/WriteGamefile.php";
 
 if ($matchup == "" && $playerID == 2 && $gameStatus >= $MGS_Player2Joined) {
