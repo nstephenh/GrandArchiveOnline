@@ -249,6 +249,22 @@ function AddFloatingMemoryChoice($fromDQ=false)
 
   }
   else {
+    $items = &GetItems($currentPlayer);
+    for($i=0; $i<count($items); $i+=ItemPieces()) {
+      switch($items[$i]) {
+        case "h23qu7d6so"://Temporal Spectrometer
+          AddDecisionQueue("YESNO", $currentPlayer, "if you want to sacrifice Temporal Spectrometer to reduce the cost");
+          AddDecisionQueue("NOPASS", $currentPlayer, "-");
+          AddDecisionQueue("PASSPARAMETER", $currentPlayer, "MYITEMS-" . $i, 1);
+          AddDecisionQueue("MZBANISH", $currentPlayer, "PLAY," . $items[$i], 1);
+          AddDecisionQueue("MZREMOVE", $currentPlayer, "-", 1);
+          for($j=0; $j<$items[$i+1]; $j++) {
+            AddDecisionQueue("DECDQVAR", $currentPlayer, "0", 1);
+          }
+          break;
+        default: break;
+      }
+    }
     AddDecisionQueue("MULTIZONEINDICES", $currentPlayer, "MYDISCARD:floatingMemoryOnly=true");
     AddDecisionQueue("SETDQCONTEXT", $currentPlayer, "Choose a floating memory card to banish", 1);
     AddDecisionQueue("MAYCHOOSEMULTIZONE", $currentPlayer, "<-", 1);
@@ -479,10 +495,8 @@ function DamageTrigger($player, $damage, $type, $source="NA")
 
 function CanDamageBePrevented($player, $damage, $type, $source="-")
 {
-  $otherPlayer = $player == 1 ? 2 : 1;
-  if($type == "ARCANE" && SearchCurrentTurnEffects("EVR105", $player)) return false;
-  if(SearchCurrentTurnEffects("UPR158", $otherPlayer)) return false;
-  if($source == "DYN005" || $source == "OUT030" || $source == "OUT031" || $source == "OUT032"|| $source == "OUT121" || $source == "OUT122" || $source == "OUT123") return false;
+  global $mainPlayer;
+  if($source == "aebjvwbciz" && IsClassBonusActive($mainPlayer, "GUARDIAN") && CharacterLevel($mainPlayer) >= 2) return false;
   return true;
 }
 
@@ -1270,7 +1284,7 @@ function ClassOverride($cardID, $player="")
   $otherCharacter = &GetPlayerCharacter($otherPlayer);
 
   if(SearchCurrentTurnEffects("UPR187", $player)) return "NONE";//Erase Face
-  if(SearchCurrentTurnEffects($otherCharacter[0] . "-SHIYANA", $player)) {
+  if(count($otherCharacter) > 0 && SearchCurrentTurnEffects($otherCharacter[0] . "-SHIYANA", $player)) {
     if($cardClass != "") $cardClass .= ",";
     $cardClass .= CardClass($otherCharacter[0]) . ",SHAPESHIFTER";
   }
@@ -1921,6 +1935,12 @@ function SelfCostModifier($cardID)
     case "ao8bls6g7x": $modifier -= (IsClassBonusActive($currentPlayer, "CLERIC") ? 1 : 0); break;//Healing Aura
     case "huqj5bbae3": $modifier -= (IsClassBonusActive($currentPlayer, "GUARDIAN") && CharacterLevel($currentPlayer) >= 2 ? 2 : 0); break;//Winds of Retribution
     case "kvoqk1l75t": $modifier -= (IsClassBonusActive($currentPlayer, "GUARDIAN") ? 2 : 0); break;//Heavy Swing
+    case "xhs5jwsl7d": $modifier -= (IsClassBonusActive($currentPlayer, "CLERIC") ? 1 : 0); break;//Enchaining Gale
+    case "fzcyfrzrpl": $modifier -= (IsClassBonusActive($currentPlayer, "GUARDIAN") ? 1 : 0); break;//Heatwave Generator
+    case "lq2kkvoqk1": $modifier -= (IsClassBonusActive($currentPlayer, "CLERIC") ? 1 : 0); break;//Necklace of Foresight
+    case "ht2tsn0ye3": $modifier -= (IsClassBonusActive($currentPlayer, "CLERIC") ? 1 : 0); break;//Meltdown
+    case "ls6g7xgwve": $modifier -= (IsClassBonusActive($currentPlayer, "MAGE") ? 1 : 0); break;//Excoriate
+    case "k2c7wklzjm": $modifier -= (SearchCount(SearchItems($currentPlayer, subtype:"SHIELD")) > 0 ? 2 : 0); break;//Frigid Bash
     default: break;
   }
   return $modifier;
@@ -2329,6 +2349,8 @@ function PlayAbility($cardID, $from, $resourcesPaid, $target = "-", $additionalC
     case "IC3OU6vCnF"://Mana Limiter
     case "kk46Whz7CJ"://Surveillance Stone
     case "1XegCUjBnY"://Life Essence Amulet
+    case "73fdt8ptrz"://Windwalker Boots
+    case "jxhkurfp66"://Charged Manaplate
       Draw($currentPlayer);
       break;
     case "YOjdZJpOO1"://Blissful Calling
@@ -2472,7 +2494,7 @@ function PlayAbility($cardID, $from, $resourcesPaid, $target = "-", $additionalC
       }
       break;
     case "soO3hjaVfN"://Rending Flames
-      if(SearchCount(SearchDiscard($currentPlayer, element:"FIRE")) >= 3 && (true || IsClassBonusActive($currentPlayer, "ASSASSIN") || IsClassBonusActive($currentPlayer, "WARRIOR")))
+      if(SearchCount(SearchDiscard($currentPlayer, element:"FIRE")) >= 3 && (IsClassBonusActive($currentPlayer, "ASSASSIN") || IsClassBonusActive($currentPlayer, "WARRIOR")))
       {
         AddDecisionQueue("MULTIZONEINDICES", $currentPlayer, "MYDISCARD:element=FIRE");
         AddDecisionQueue("MAYCHOOSEMULTIZONE", $currentPlayer, "<-", 1);
@@ -3292,8 +3314,10 @@ function PlayAbility($cardID, $from, $resourcesPaid, $target = "-", $additionalC
       }
       break;
     case "fdt8ptrz1b"://Scavenging Raccoon
-      MZMoveCard($currentPlayer, "THEIRDISCARD", "THEIRBANISH,GY,-", may:true);
-      MZMoveCard($currentPlayer, "THEIRDISCARD", "THEIRBANISH,GY,-", may:true);
+      if($from != "PLAY") {
+        MZMoveCard($currentPlayer, "THEIRDISCARD", "THEIRBANISH,GY,-", may:true);
+        MZMoveCard($currentPlayer, "THEIRDISCARD", "THEIRBANISH,GY,-", may:true);
+      }
       break;
     case "fp66pv4n1n"://Rusted Warshield
       AddCurrentTurnEffect($cardID, $currentPlayer);
@@ -3329,6 +3353,180 @@ function PlayAbility($cardID, $from, $resourcesPaid, $target = "-", $additionalC
       break;
     case "zi5h8asbie"://Scatter Essence
       MZChooseAndDestroy($currentPlayer, "THEIRAURAS:type=PHANTASIA");
+      break;
+    case "xy5lh23qu7"://Obelisk of Fabrication
+      $index = PlayAlly("mu6gvnta6q", $currentPlayer);//Automaton Drone
+      $ally = new Ally("MYALLY-" . $index);
+      $ally->AddBuffCounter();
+      break;
+    case "y5ttkk39i1"://Winbless Gatekeeper
+      if($from != "PLAY") {
+        AddDecisionQueue("YESNO", $currentPlayer, "if you want to pay 2 to buff an ally", 0, 1);
+        AddDecisionQueue("NOPASS", $currentPlayer, "-");
+        AddDecisionQueue("PAYRESOURCES", $currentPlayer, "2", 1);
+        AddDecisionQueue("MULTIZONEINDICES", $currentPlayer, "MYALLY:class=GUARDIAN", 1);
+        AddDecisionQueue("CHOOSEMULTIZONE", $currentPlayer, "<-", 1);
+        AddDecisionQueue("MZOP", $currentPlayer, "BUFFALLY", 1);
+      }
+      break;
+    case "xhs5jwsl7d"://Enchaining Gale
+      AddDecisionQueue("MULTIZONEINDICES", $currentPlayer, "THEIRALLY");
+      AddDecisionQueue("CHOOSEMULTIZONE", $currentPlayer, "<-", 1);
+      AddDecisionQueue("MZOP", $currentPlayer, "SUPPRESS", 1);
+      break;
+    case "wzh973fdt8"://Develop Mana
+      AddCurrentTurnEffect($cardID, $currentPlayer);
+      break;
+    case "x7u6wzh973"://Frostbinder Apostle
+      if(CharacterLevel($currentPlayer) >= 2) {
+        DealArcane(4, 1, "PLAYCARD", $cardID, resolvedTarget: $target);
+      }
+      break;
+    case "a4dk88zq9o"://Varuckan Acolyte
+      if($from != "PLAY") {
+        AddDecisionQueue("MULTIZONEINDICES", $currentPlayer, "MYITEMS:type=REGALIA;maxCost=0&THEIRITEMS:type=REGALIA;maxCost=0&MYCHAR:type=REGALIA;maxCost=0&THEIRCHAR:type=REGALIA;maxCost=0");
+        AddDecisionQueue("SETDQCONTEXT", $currentPlayer, "Choose a regalia to destroy", 1);
+        AddDecisionQueue("CHOOSEMULTIZONE", $currentPlayer, "<-", 1);
+        AddDecisionQueue("MZDESTROY", $currentPlayer, "-", 1);
+      }
+      break;
+    case "1gxrpx8jyp"://Fanatical Devotee
+      $otherPlayer = ($currentPlayer == 1 ? 2 : 1);
+      if(SearchCount(SearchDiscard($currentPlayer, element:"FIRE")) >= 2 && (IsClassBonusActive($currentPlayer, "CLERIC") || IsClassBonusActive($currentPlayer, "TAMER")))
+      {
+        AddDecisionQueue("MULTIZONEINDICES", $currentPlayer, "MYDISCARD:element=FIRE");
+        AddDecisionQueue("MAYCHOOSEMULTIZONE", $currentPlayer, "<-", 1);
+        AddDecisionQueue("MZBANISH", $currentPlayer, "<-", 1);
+        AddDecisionQueue("MZREMOVE", $currentPlayer, "-", 1);
+        for($i=0; $i<2; ++$i)
+        {
+          AddDecisionQueue("MULTIZONEINDICES", $currentPlayer, "MYDISCARD:element=FIRE", 1);
+          AddDecisionQueue("CHOOSEMULTIZONE", $currentPlayer, "<-", 1);
+          AddDecisionQueue("MZBANISH", $currentPlayer, "<-", 1);
+          AddDecisionQueue("MZREMOVE", $currentPlayer, "-", 1);
+        }
+        AddDecisionQueue("TAKEDAMAGE", $otherPlayer, "3-1gxrpx8jyp-ONDEATH", 1);
+      }
+      break;
+    case "af098kmoi0"://Orb of Hubris
+      Draw($currentPlayer);
+      Draw($currentPlayer);
+      Draw($currentPlayer);
+      AddDecisionQueue("FINDINDICES", $currentPlayer, "HAND");
+      AddDecisionQueue("PREPENDLASTRESULT", $currentPlayer, "3-");
+      AddDecisionQueue("APPENDLASTRESULT", $currentPlayer, "-3");
+      AddDecisionQueue("MULTICHOOSEHAND", $currentPlayer, "<-", 1);
+      AddDecisionQueue("MULTIREMOVEHAND", $currentPlayer, "-", 1);
+      AddDecisionQueue("MULTIADDDECK", $currentPlayer, "-", 1);
+      AddDecisionQueue("SHUFFLEDECK", $currentPlayer, "-", 1);
+      break;
+    case "d6soporhlq"://Obelisk of Protection
+      if($from == "PLAY") {
+        AddCurrentTurnEffect($cardID, $currentPlayer);
+      }
+      break;
+    case "j68m69iq4d"://Sentinel Fabricator
+      if($from == "PLAY") {
+        $index = PlayAlly("mu6gvnta6q", $currentPlayer);//Automaton Drone
+        $ally = new Ally("MYALLY-" . $index);
+        $ally->AddBuffCounter();
+      }
+      break;
+    case "lq2kkvoqk1"://Necklace of Foresight
+      if($from == "PLAY") {
+        PlayerOpt($currentPlayer, 4);
+      }
+      break;
+    case "8c9htu9agw"://Prototype Staff
+      if(CharacterLevel($currentPlayer) >= 4) {
+        BottomDeck($currentPlayer, true, shouldDraw:false);
+        AddDecisionQueue("DRAWINTOMEMORY", $currentPlayer, "-", 1);
+      }
+      break;
+    case "44vm5kt3q2"://Battlefield Spotter
+      if(IsClassBonusActive($currentPlayer, "RANGER")) {
+        $ally = new Ally($target);
+        $ally->SetDistant();
+      }
+      break;
+    case "d53zc9p4lp"://Airship Cannoneer
+      if($from == "PLAY" && SearchCount(SearchDiscard($currentPlayer, element:"FIRE")) >= 3) {
+        MZMoveCard($currentPlayer, "MYDISCARD:element=FIRE", "MYBANISH,GY,-", may:true);
+        MZMoveCard($currentPlayer, "MYDISCARD:element=FIRE", "MYBANISH,GY,-", may:true);
+        MZMoveCard($currentPlayer, "MYDISCARD:element=FIRE", "MYBANISH,GY,-", may:true);
+        AddDecisionQueue("ATTACKEROP", $currentPlayer, "SETDISTANT", 1);
+      }
+      break;
+    case "ettczb14m4"://Alchemist's Kit
+      $index = GetClassState($currentPlayer, $CS_PlayIndex);
+      $items = &GetItems($currentPlayer);
+      $draws = floor($items[$index+1]/4);
+      for($i=0; $i<$draws; ++$i) Draw($currentPlayer);
+      break;
+    case "ht2tsn0ye3"://Meltdown
+      MZChooseAndDestroy($currentPlayer, "THEIRAURAS:type=DOMAIN&THEIRITEMS&THEIRCHAR:type=WEAPON", may:false);
+      break;
+    case "isxy5lh23q"://Flash Grenade
+      if($from != "PLAY") {
+        Draw($currentPlayer);
+      }
+      else {
+        AddCurrentTurnEffect($cardID, $currentPlayer);
+      }
+      break;
+    case "klryvfq3hu"://Deployment Beacon
+      PlayAlly("mu6gvnta6q", $currentPlayer);//Automaton Drone
+      break;
+    case "96659ytyj2"://Crimson Protective Trinket
+      if($from == "PLAY") {
+        $otherPlayer = ($currentPlayer == 1 ? 2 : 1);
+        $memory = &GetMemory($otherPlayer);
+        $amount = count($memory)/MemoryPieces() > 1 ? 2 : count($memory)/MemoryPieces();
+        for($i=0; $i<$amount; ++$i) {
+          $index = MemoryRevealRandom($otherPlayer);
+          if($index > -1 && ElementContains($memory[$index], "WIND", $otherPlayer)) {
+            $cardID = $memory[$index];
+            RemoveMemory($otherPlayer, $index);
+            BanishCardForPlayer($cardID, $otherPlayer, "MEMORY", "-", "MEMORY");
+          }
+        }
+      }
+      break;
+    case "m3pal7cpvn"://Azure Protective Trinket
+      if($from == "PLAY") {
+        MZMoveCard($currentPlayer, "THEIRDISCARD:element=FIRE", "THEIRBANISH,GY,-", may:true, isSubsequent: false);
+        MZMoveCard($currentPlayer, "THEIRDISCARD:element=FIRE", "THEIRBANISH,GY,-", may:true, isSubsequent: true);
+        MZMoveCard($currentPlayer, "THEIRDISCARD:element=FIRE", "THEIRBANISH,GY,-", may:true, isSubsequent: true);
+      }
+      break;
+    case "h23qu7d6so"://Temporal Spectrometer
+      if($from == "PLAY") {
+        $items = &GetItems($currentPlayer);
+        $index = GetClassState($currentPlayer, $CS_PlayIndex);
+        ++$items[$index+1];
+      }
+      break;
+    case "ir99sx6q3p"://Plea for Peace
+      $otherPlayer = ($currentPlayer == 1 ? 2 : 1);
+      AddCurrentTurnEffect($cardID, $currentPlayer);
+      AddNextTurnEffect($cardID, $currentPlayer);
+      AddCurrentTurnEffect($cardID, $otherPlayer);
+      AddNextTurnEffect($cardID, $otherPlayer);
+      break;
+    case "j4lx6xwr42"://Firetongue
+      if($from == "EQUIP" && SearchCount(SearchDiscard($currentPlayer, element:"FIRE")) >= 1) {
+        MZMoveCard($currentPlayer, "MYDISCARD:element=FIRE", "MYBANISH,GY,-", may:true);
+        AddDecisionQueue("ATTACKEROP", $currentPlayer, "ADDDURABILITY", 1);
+      }
+      break;
+    case "ls6g7xgwve"://Excoriate
+      MZChooseAndDestroy($currentPlayer, "THEIRALLY:maxCost=4", may:false);
+      break;
+    case "m6h38lrj52"://Rococo, Explosive Maven
+      $otherPlayer = ($currentPlayer == 1 ? 2 : 1);
+      if(PlayerInfluence($otherPlayer) <= 4) {
+        DealArcane(2, $otherPlayer, "TRIGGER", $cardID, resolvedTarget:"THEIRCHAR-0", fromQueue:false, player:$player);
+      }
       break;
     default: break;
   }
@@ -3368,13 +3566,14 @@ function MemoryCount($player) {
   return count($memory)/MemoryPieces();
 }
 
-function MemoryRevealRandom($player)
+function MemoryRevealRandom($player, $returnIndex=false)
 {
   $memory = &GetMemory($player);
   $rand = GetRandom()%(count($memory)/MemoryPieces());
-  $toReveal = $memory[$rand*MemoryPieces()];
+  $index = $rand*MemoryPieces();
+  $toReveal = $memory[$index];
   $wasRevealed = RevealCards($toReveal);
-  return $wasRevealed ? $toReveal : "";
+  return $wasRevealed ? ($returnIndex ? $toReveal : $index) : ($returnIndex ? -1 : "");
 }
 
 function DamagePlayerAllies($player, $damage, $source, $type)
@@ -3472,6 +3671,8 @@ function PlayRequiresTarget($cardID)
     case "bro89w0ejc": return 2;//Displace
     case "ch2bbmoqk2": return 2;//Organize the Alliance
     case "igka5av43e": return 3;//Incendiary Fractal
+    case "x7u6wzh973": return 2;//Frostbinder Apostle
+    case "44vm5kt3q2": return 2;//Battlefield Spotter
     default: return -1;
   }
 }

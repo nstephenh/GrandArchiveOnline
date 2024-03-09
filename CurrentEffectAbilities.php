@@ -57,6 +57,11 @@ function EffectAttackModifier($cardID)
     case "i1f0ht2tsn": return 1;//Strategic Warfare
     case "huqj5bbae3": return 2;//Winds of Retribution
     case "r0zadf9q1w": return -2;//Conjure Downpour
+    case "fzcyfrzrpl": return 1;//Heatwave Generator
+    case "44vm5kt3q2"://Battlefield Spotter
+      $mzID = AttackerMZID($mainPlayer);
+      $ally = new Ally($mzID);
+      return $ally->IsDistant() ? 1 : 0;
     default: return 0;
   }
 }
@@ -137,6 +142,9 @@ function CurrentEffectCostModifiers($cardID, $from)
           $costModifier -= 5;
           $remove = true;
           break;
+        case "ir99sx6q3p"://Plea for Peace
+          if(CardTypeContains($cardID, "AA", $currentPlayer) || ($from == "PLAY" && IsAlly($cardID, $currentPlayer))) $costModifier += 1;
+          break;
         default: break;
       }
       if($remove) RemoveCurrentTurnEffect($i);
@@ -214,6 +222,13 @@ function CurrentEffectDamagePrevention($player, $type, $damage, $source, $preven
         case "fp66pv4n1n"://Rusted Warshield
           if($preventable) $damage -= 2;
           $remove = true;
+          break;
+        case "d6soporhlq"://Obelisk of Protection
+          if($preventable) $damage -= 2;
+          $remove = true;
+          break;
+        case "isxy5lh23q"://Flash Grenade
+          if($preventable) $damage -= 3;
           break;
         default: break;
       }
@@ -382,7 +397,9 @@ function CurrentEffectEndTurnAbilities()
       AddNextTurnEffect($currentTurnEffects[$i], $currentTurnEffects[$i + 1]);
     }
     switch($currentTurnEffects[$i]) {
-
+      case "wzh973fdt8"://Develop Mana
+        AddNextTurnEffect($currentTurnEffects[$i], $currentTurnEffects[$i + 1]);
+        break;
       default: break;
     }
     if($remove) RemoveCurrentTurnEffect($i);
@@ -428,6 +445,8 @@ function IsCombatEffectActive($cardID)
     case "i1f0ht2tsn": return IsAlly($attackID);//Strategic Warfare
     case "huqj5bbae3": return IsAlly($attackID);//Winds of Retribution
     case "r0zadf9q1w": return true;//Conjure Downpour
+    case "fzcyfrzrpl": return true;//Heatwave Generator
+    case "44vm5kt3q2": return true;//Battlefield Spotter
     default: return false;
   }
 }
@@ -574,6 +593,7 @@ function CurrentEffectLevelModifier($player)
         case "AnEPyfFfHj": $levelModifier += $subparam;//Power Overwhelming
         case "i0a5uhjxhk": $levelModifier += 1; break;//Blightroot (1)
         case "5joh300z2s": $levelModifier += 1; break;//Mana Root (2)
+        case "wzh973fdt8": $levelModifier += 1;//Develop Mana
         default:
           break;
       }

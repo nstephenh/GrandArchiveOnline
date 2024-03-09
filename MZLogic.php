@@ -114,6 +114,16 @@ function MZAddZone($player, $parameter, $lastResult)
       case "THEIRMATERIAL": AddMaterial($cardIDs[$i], $otherPlayer, $params[1]);
       case "THEIRDISCARD": AddGraveyard($cardIDs[$i], $otherPlayer, $params[1]);
       case "THEIRBANISH": BanishCardForPlayer($cardIDs[$i], $otherPlayer, $params[1], $params[2]); break;
+      case "MYDISCARD":
+        $from = $params[1];
+        AddGraveyard($cardIDs[$i], $player, "-", $from);
+        if($from == "HAND") CardDiscarded($player, $cardIDs[$i]);
+        break;
+      case "THEIRDISCARD":
+        $from = $params[1];
+        AddGraveyard($cardIDs[$i], $otherPlayer, "-", $from);
+        if($from == "HAND") CardDiscarded($otherPlayer, $cardIDs[$i]);
+        break;
       default: break;
     }
   }
@@ -391,4 +401,9 @@ function GetMZType($mzIndex) {
   if($mzArr[0] == "MYALLY" || $mzArr[0] == "THEIRALLY") return "ALLY";
   else if($mzArr[0] == "MYCHAR" || $mzArr[0] == "THEIRCHAR") return "CHAR";
   return "";
+}
+
+function GetMZIndex($mzIndex) {
+  $mzArr = explode("-", $mzIndex);
+  return $mzArr[1];
 }

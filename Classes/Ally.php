@@ -36,6 +36,14 @@ class Ally {
     return $this->allies[$this->index+9] == 1 ? true : false;
   }
 
+  function IsFostered() {
+    return $this->allies[$this->index+10] == 2 ? true : false;
+  }
+
+  function CurrentPower() {
+    return AttackValue($this->CardID()) + $this->allies[$this->index+7];
+  }
+
   function OnFoster() {
     $fosterActive = $this->allies[$this->index+10] == 0;
     $this->allies[$this->index+10] = 2;

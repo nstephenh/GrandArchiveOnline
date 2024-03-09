@@ -194,7 +194,9 @@ function ProcessInput($playerID, $mode, $buttonInput, $cardID, $chkCount, $chkIn
       WriteLog("Player $currentPlayer materialized " . CardLink($cardID, $cardID));
       AddDecisionQueue("PASSPARAMETER", $currentPlayer, $cost);
       AddDecisionQueue("SETDQVAR", $currentPlayer, "0");
-      if($cost > 0) AddFloatingMemoryChoice();
+      if($cost > 0) {
+        AddFloatingMemoryChoice();
+      }
       AddDecisionQueue("FINISHMATERIALIZE", $currentPlayer, $index);
       AddDecisionQueue("STARTTURN", $currentPlayer, "-");
       ProcessDecisionQueue();
@@ -1475,6 +1477,9 @@ function PayAdditionalCosts($cardID, $from)
       AddDecisionQueue("MZADDZONE", $currentPlayer, "MYMATERIAL", 1);
       AddDecisionQueue("MZREMOVE", $currentPlayer, "-", 1);
       break;
+    case "lzjmwuir99"://Firetuned Automaton
+      MZMoveCard($currentPlayer, "MYHAND:element=FIRE", "MYDISCARD,HAND", may:false, isSubsequent: false);
+      break;
     default:
       break;
   }
@@ -1485,6 +1490,7 @@ function MaterializeCardEffect($cardID)
   global $currentPlayer;
   switch($cardID)
   {
+    //Spirit of Fire, Spirit of Water, Spirit of Wind, Lost Spirit
     case "LMyKyVC2O9": case "tafqldAGRF": case "pNiyaGlIe7": case "cFdWXaILRT":
       for($i=0; $i<7; ++$i) Draw($currentPlayer);
       break;
@@ -1661,6 +1667,8 @@ function PlayCardEffect($cardID, $from, $resourcesPaid, $target = "-", $addition
       PlayAura($cardID, $currentPlayer);
     } else if ($cardSubtype == "Landmark") {
       PlayLandmark($cardID, $currentPlayer);
+    } else if(DelimStringContains($cardTypes, "WEAPON")) {
+      AddCharacter($cardID, $currentPlayer);
     } else if ($definedCardType != "C" && $definedCardType != "E" && $definedCardType != "W") {
       $goesWhere = GoesWhereAfterResolving($cardID, $from, $currentPlayer, resourcesPaid:$resourcesPaid);
       switch ($goesWhere) {

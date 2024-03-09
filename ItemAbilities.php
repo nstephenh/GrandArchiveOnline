@@ -84,6 +84,14 @@ function PayItemAbilityAdditionalCosts($cardID, $from)
     case "EQZZsiUDyl"://Storm Tyrant's Eye
     case "1bqry41lw9"://Explosive Rune
     case "fp66pv4n1n"://Rusted Warshield
+    case "73fdt8ptrz"://Windwalker Boots
+    case "af098kmoi0"://Orb of Hubris
+    case "jxhkurfp66"://Charged Manaplate
+    case "lq2kkvoqk1"://Necklace of Foresight
+    case "ettczb14m4"://Alchemist's Kit
+    case "isxy5lh23q"://Flash Grenade
+    case "96659ytyj2"://Crimson Protective Trinket
+    case "m3pal7cpvn"://Azure Protective Trinket
       DestroyItemForPlayer($currentPlayer, $index, true);
       BanishCardForPlayer($cardID, $currentPlayer, $from, "-", $currentPlayer);
       break;
@@ -97,6 +105,11 @@ function PayItemAbilityAdditionalCosts($cardID, $from)
       break;
     case "0z2snsdwmx"://Scale of Souls
     case "2ha4dk88zq"://Cloak of Stillwater
+    case "xy5lh23qu7"://Obelisk of Fabrication
+    case "d6soporhlq"://Obelisk of Protection
+    case "j68m69iq4d"://Sentinel Fabricator
+    case "8c9htu9agw"://Prototype Staff
+    case "h23qu7d6so"://Temporal Spectrometer
       $items = &GetItems($currentPlayer);
       $items[$index+2] = 1;
       break;
@@ -143,6 +156,12 @@ function DestroyItemForPlayer($player, $index, $skipDestroy=false)
     unset($items[$i]);
   }
   $items = array_values($items);
+  switch($cardID) {
+    case "klryvfq3hu"://Deployment Beacon
+      if(IsClassBonusActive($player, "GUARDIAN")) PlayAlly("mu6gvnta6q", $player);//Automaton Drone
+      break;
+    default: break;
+  }
   return $cardID;
 }
 
@@ -211,6 +230,12 @@ function ItemStartTurnAbilities()
       case "P7hHZBVScB"://Orb of Glitter
         PlayerOpt($mainPlayer, 1);
         break;
+      case "fzcyfrzrpl"://Heatwave Generator
+        AddDecisionQueue("MULTIZONEINDICES", $mainPlayer, "MYALLY");
+        AddDecisionQueue("CHOOSEMULTIZONE", $mainPlayer, "<-", 1);
+        AddDecisionQueue("MZOP", $mainPlayer, "GETUNIQUEID", 1);
+        AddDecisionQueue("ADDLIMITEDCURRENTEFFECT", $mainPlayer, "fzcyfrzrpl-TRUE,HAND", 1);
+        break;
       default: break;
     }
   }
@@ -259,7 +284,13 @@ function ItemEndTurnAbilities()
   for($i = count($items) - ItemPieces(); $i >= 0; $i -= ItemPieces()) {
     $remove = false;
     switch($items[$i]) {
-
+      case "73fdt8ptrz"://Windwalker Boots
+        $char = &GetPlayerCharacter($mainPlayer);
+        if(IsClassBonusActive($mainPlayer, "ASSASSIN") && $char[1] == "2") {
+          WriteLog("Windwalker Boots adds a preparation counter for $mainPlayer");
+          AddPreparationCounters($mainPlayer, 1);
+        }
+        break;
       default: break;
     }
     if($remove) DestroyItemForPlayer($mainPlayer, $i);
@@ -304,6 +335,7 @@ function ItemLevelModifiers($player)
     {
       case "JPcFmCpdiF": if(SearchCount(SearchAllies($player, "", "BEAST")) + SearchCount(SearchAllies($player, "", "ANIMAL")) > 0) ++$modifier; break;//Beastbond Ears
       case "WAFNy2lY5t": if(SearchCount(SearchAllies($player, "", "BEAST")) + SearchCount(SearchAllies($player, "", "ANIMAL")) > 0) ++$modifier; break;//Melodious Flute
+      case "8c9htu9agw": if(IsClassBonusActive($player, "CLERIC") && MemoryCount($player) >= 4) ++$modifier; break;//Prototype Staff
       default: break;
     }
   }

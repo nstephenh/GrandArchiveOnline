@@ -104,6 +104,7 @@ function HasVigor($cardID, $player)
       return IsClassBonusActive($player, "WARRIOR") || IsClassBonusActive($player, "GUARDIAN");
     case "3TfIePpuZO": return true;//Trained Hawk
     case "7NMFSRR5V3": return IsClassBonusActive($player, "TAMER");
+    case "m4o98vn1vo": return IsClassBonusActive($player, "RANGER");//Winbless Arbalest
     default: return false;
   }
 }
@@ -127,6 +128,7 @@ function HasTrueSight($cardID, $player, $index)
     case "3TfIePpuZO": return true;//Trained Hawk
     case "LNSRQ5xW6E": return true;//Stillwater Patrol
     case "Dz8I0eJzaf": return IsClassBonusActive($player, "WARRIOR");//Sword of Seeking
+    case "du50pcescf": return CharacterLevel($player) >= 2;//Gawain, Chivalrous Thief
     default: return false;
   }
 }
@@ -174,6 +176,7 @@ function HasStealth($cardID, $player, $index)
     case "4s0c9XgLg7": return true;//Snow Fairy
     case "ZfCtSldRIy": return true;//Windrider Mage
     case "FWnxKjSeB1": return true;//Spark Fairy
+    case "wklzjmwuir": return true;//Shimmercloak Assassin
     default: return false;
   }
 }
@@ -198,6 +201,7 @@ function HasTaunt($cardID, $player, $index)
     case "23yfzk96yd": return SearchCurrentTurnEffects($cardID, $player);//Veteran Blazebearer
     case "eifnz0fgm3": return true;//Stalwart Shieldmate
     case "pufyoz23yf": return IsClassBonusActive($player, "GUARDIAN");//Waverider Protector
+    case "y5ttkk39i1": return true;//Winbless Gatekeeper
     default: return false;
   }
 }
@@ -207,6 +211,7 @@ function HasIntercept($cardID, $player, $index)
   switch($cardID)
   {
     case "c9p4lpnvx7": return SearchCount(SearchAuras($player, type:"PHANTASIA"));//Awakened Deacon
+    case "x7u6wzh973": return true;//Frostbinder Apostle
     default: return false;
   }
 }
@@ -248,12 +253,24 @@ function AbilityCost($cardID)
 {
   global $currentPlayer;
   switch($cardID) {
+    case "8kmoi0a5uh"://Bulwark Sword
+      return 2;
     case "0z2snsdwmx"://Scale of Souls
       return 2;
     case "5swaf8urrq"://Whirlwind Vizier
       $abilityType = GetResolvedAbilityType($cardID);
       if($abilityType == "A") return 3;
       break;
+    case "xy5lh23qu7"://Obelisk of Fabrication
+      $cost = 6 - SearchCount(SearchAura($currentPlayer, "DOMAIN"));
+      if($cost < 0) $cost = 0;
+      return $cost;
+    case "d6soporhlq"://Obelisk of Protection
+      $cost = 4 - SearchCount(SearchAura($currentPlayer, "DOMAIN"));
+      if($cost < 0) $cost = 0;
+      return $cost;
+    case "j68m69iq4d"://Sentinel Fabricator
+      return 3;
     default: break;
   }
   if(CardTypeContains($cardID, "ALLY", $currentPlayer)) return 0;
@@ -351,6 +368,15 @@ function GetAbilityType($cardID, $index = -1, $from="-")
     case "EQZZsiUDyl"://Storm Tyrant's Eye
     case "1bqry41lw9"://Explosive Rune
     case "fp66pv4n1n"://Rusted Warshield
+    case "73fdt8ptrz"://Windwalker Boots
+    case "af098kmoi0"://Orb of Hubris
+    case "jxhkurfp66"://Charged Manaplate
+    case "lq2kkvoqk1"://Necklace of Foresight
+    case "ettczb14m4"://Alchemist's Kit
+    case "isxy5lh23q"://Flash Grenade
+    case "96659ytyj2"://Crimson Protective Trinket
+    case "h23qu7d6so"://Temporal Spectrometer
+    case "m3pal7cpvn"://Azure Protective Trinket
       return "I";
     case "i0a5uhjxhk"://Blightroot (1)
     case "5joh300z2s"://Mana Root (2)
@@ -360,6 +386,10 @@ function GetAbilityType($cardID, $index = -1, $from="-")
     case "69iq4d5vet"://Springleaf (6)
       return "I";
     case "1lw9n0wpbh"://Protective Fractal
+    case "xy5lh23qu7"://Obelisk of Fabrication
+    case "d6soporhlq"://Obelisk of Protection
+    case "j68m69iq4d"://Sentinel Fabricator
+    case "8c9htu9agw"://Prototype Staff
       return "I";
     case "0z2snsdwmx"://Scale of Souls
     case "2ha4dk88zq"://Cloak of Stillwater
