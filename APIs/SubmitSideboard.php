@@ -50,20 +50,13 @@ if ($authKey != $targetAuth) {
 }
 
 $submission = json_decode($submissionString);
+var_dump($submission);
+
 $character = $submission->hero;
-if(!isset($submission->hands)) $hands = "";
-else $hands = implode(" ", $submission->hands);
-if($hands != "") $character .= " " . $hands;
-if(isset($submission->quiver) && $submission->quiver != "") $character .= " " . $submission->quiver;
-if(isset($submission->head) && $submission->head != "") $character .= " " . $submission->head;
-if(isset($submission->chest) && $submission->chest != "") $character .= " " . $submission->chest;
-if(isset($submission->arms) && $submission->arms != "") $character .= " " . $submission->arms;
-if(isset($submission->legs) && $submission->legs != "") $character .= " " . $submission->legs;
-$deck = (isset($submission->deck) ? implode(" ", $submission->deck) : "");
-//TODO: parse inventory
+$deck = (isset($submission->selectedDeck) ? implode(" ", $submission->selectedDeck) : "");
+//TODO: parse material/properly handle sideboarding
 
-
-$playerDeck = $submission->deck;
+$playerDeck = $submission->selectedDeck;
 $deckCount = count($playerDeck);
 if($deckCount < 60 && ($format == "cc" || $format == "compcc" || $format == "llcc")) {
   $response->status = "FAIL";
@@ -113,66 +106,13 @@ if($p1SideboardSubmitted == "1" && $p2SideboardSubmitted == "1") {
   initializePlayerState($handler, $p2DeckHandler, 2);
   fclose($p2DeckHandler);
 
-  fwrite($handler, "\r\n"); //Landmarks
-  fwrite($handler, "0\r\n"); //Game winner (0=none, else player ID)
-  fwrite($handler, "$firstPlayer\r\n"); //First Player
-  fwrite($handler, "1\r\n"); //Current Player
-  fwrite($handler, "1\r\n"); //Current Turn
-  fwrite($handler, "M 1\r\n"); //What phase/player is active
-  fwrite($handler, "1\r\n"); //Action points
-  fwrite($handler, "\r\n"); //Combat Chain
-  fwrite($handler, "0 0 0 0 0 0 0 GY NA 0 0 0 0 0 0 0 NA 0 0 -1 -1 NA 0 0 0 -1 0 0 0 0 - 0 0 0 0 0 0 0\r\n"); //Combat Chain State
-  fwrite($handler, "\r\n"); //Current Turn Effects
-  fwrite($handler, "\r\n"); //Current Turn Effects From Combat
-  fwrite($handler, "\r\n"); //Next Turn Effects
-  fwrite($handler, "\r\n"); //Decision Queue
-  fwrite($handler, "0\r\n"); //Decision Queue Variables
-  fwrite($handler, "0 - - -\r\n"); //Decision Queue State
-  fwrite($handler, "\r\n"); //Layers
-  fwrite($handler, "\r\n"); //Layer Priority
-  fwrite($handler, "1\r\n"); //What player's turn it is
-  fwrite($handler, "\r\n"); //Last Played Card
-  fwrite($handler, "0\r\n"); //Number of prior chain links this turn
-  fwrite($handler, "\r\n"); //Chain Link Summaries
-  fwrite($handler, $p1Key . "\r\n"); //Player 1 auth key
-  fwrite($handler, $p2Key . "\r\n"); //Player 2 auth key
-  fwrite($handler, 0 . "\r\n"); //Permanent unique ID counter
-  fwrite($handler, "0\r\n"); //Game status -- 0 = START, 1 = PLAY, 2 = OVER
-  fwrite($handler, "\r\n"); //Animations
-  fwrite($handler, "0\r\n"); //Current Player activity status -- 0 = active, 2 = inactive
-  fwrite($handler, "0\r\n"); //Player1 Rating - 0 = not rated, 1 = green (positive), 2 = red (negative)
-  fwrite($handler, "0\r\n"); //Player2 Rating - 0 = not rated, 1 = green (positive), 2 = red (negative)
-  fwrite($handler, "0\r\n"); //Player 1 total time
-  fwrite($handler, "0\r\n"); //Player 2 total time
-  fwrite($handler, time() . "\r\n"); //Last update time
-  fwrite($handler, $roguelikeGameID . "\r\n"); //Roguelike game ID
-  fwrite($handler, "\r\n");//Events
-  fwrite($handler, "-\r\n");//Effect Context
-  fwrite($handler, implode(" ", $p1Inventory) . "\r\n"); //p1 Inventory
-  fwrite($handler, implode(" ", $p2Inventory) . "\r\n"); //p2 Inventory
-  fwrite($handler, $p1IsAI . "\r\n");//Is player 1 AI? (1 = yes, 0 = no)
-  fwrite($handler, $p2IsAI . "\r\n");//Is player 2 AI? (1 = yes, 0 = no)
-  fclose($handler);
+  WriteGameFile();
+  SetCachePiece($gameName, $playerID + 1, strval(round(microtime(true) * 1000)));
+  SetCachePiece($gameName, $playerID + 3, "0");
+  SetCachePiece($gameName, $playerID + 6, $character);
+  SetCachePiece($gameName, 14, $gameStatus);
+  GamestateUpdated($gameName);
 
-  //Write initial gamestate to memory
-  $gamestate = file_get_contents("../Games/" . $gameName . "/gamestate.txt");
-  WriteGamestateCache($gameName, $gamestate);
-
-  //Set up log file
-  $filename = "../Games/" . $gameName . "/gamelog.txt";
-  $filepath = "../Games/" . $gameName . "/";
-  $handler = fopen($filename, "w");
-  fclose($handler);
-
-  $currentTime = strval(round(microtime(true) * 1000));
-  $currentUpdate = GetCachePiece($gameName, 1);
-  $p1Hero = GetCachePiece($gameName, 7);
-  $p2Hero = GetCachePiece($gameName, 8);
-  $visibility = GetCachePiece($gameName, 9);
-  $format = GetCachePiece($gameName, 13);
-  $currentPlayer = 0;
-  $isReplay = 0;
-  WriteCache($gameName, ($currentUpdate + 1) . "!" . $currentTime . "!" . $currentTime . "!-1!-1!" . $currentTime . "!"  . $p1Hero . "!" . $p2Hero . "!" . $visibility . "!" . $isReplay . "!0!0!" . $format . "!" . $MGS_GameStarted . "!0!0"); //Initialize SHMOP cache for this game
 
   ob_start();
   $filename = "../Games/" . $gameName . "/gamestate.txt";
